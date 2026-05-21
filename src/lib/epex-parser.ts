@@ -1,6 +1,7 @@
 import Papa from 'papaparse';
 import { parse } from 'date-fns';
 import * as XLSX from 'xlsx';
+import { readFileAsText } from './csv-parser';
 
 export interface EPEXSpotPrice {
   timestamp: Date;
@@ -25,7 +26,8 @@ export async function parseEPEXSpotPricesFromFile(file: File): Promise<EPEXParse
   if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
     return parseExcelFile(file);
   } else {
-    const content = await file.text();
+    // Encoding-Erkennung (UTF-8 / Windows-1252) für korrekte Umlaute
+    const content = await readFileAsText(file);
     return parseCSVContent(content);
   }
 }

@@ -40,6 +40,38 @@ export interface ColumnSuggestion {
   powerUnitSuggestion?: 'kW' | 'kWh';
 }
 
+/**
+ * Dekodiert einen ArrayBuffer zu Text und erkennt dabei die Zeichenkodierung.
+ * Deutsche Energie-CSVs sind häufig in Windows-1252 (ISO-8859-1) kodiert.
+ * Strategie: zuerst strikt als UTF-8 dekodieren; schlägt das wegen ungültiger
+ * Bytefolgen fehl, wird auf Windows-1252 zurückgefallen. So bleiben Umlaute
+ * (ä, ö, ü, ß) in beiden Fällen korrekt erhalten.
+ */
+export const decodeBuffer = (buffer: ArrayBuffer): string => {
+  const bytes = new Uint8Array(buffer);
+
+  // UTF-8 BOM (EF BB BF) → eindeutig UTF-8
+  if (bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) {
+    return new TextDecoder('utf-8').decode(buffer);
+  }
+
+  // Strikt als UTF-8 versuchen; bei ungültigen Bytefolgen Fallback auf Windows-1252
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(buffer);
+  } catch {
+    console.warn('Datei ist kein gültiges UTF-8 – verwende Windows-1252 (ISO-8859-1) als Fallback für Umlaute');
+    return new TextDecoder('windows-1252').decode(buffer);
+  }
+};
+
+/**
+ * Liest eine Datei als Text mit automatischer Encoding-Erkennung (UTF-8 / Windows-1252).
+ */
+export const readFileAsText = async (file: File): Promise<string> => {
+  const buffer = await file.arrayBuffer();
+  return decodeBuffer(buffer);
+};
+
 export const detectColumns = (headers: string[]): ColumnSuggestion => {
   let timestampField = '';
   let powerField = '';
@@ -254,48 +286,7 @@ const parseLoadProfileCSVOptimized = (
   return new Promise((resolve) => {
     const startTime = Date.now();
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
-      const { cleanedText, metadataRows, extractedMetadata } = detectAndSkipMetadataRows(text);
-
-      if (metadataRows > 0) {
-        console.log(`Überspringe ${metadataRows} Metadaten-Zeilen`);
-        console.log('Extrahierte Metadaten:', extractedMetadata);
-      }
-
-      Papa.parse(cleanedText, {
-        header: true,
-        skipEmptyLines: true,
-        dynamicTyping: false,
-        complete: (results) => {
-          const processingTime = Date.now() - startTime;
-          console.log(`CSV-Parsing abgeschlossen in ${processingTime}ms für ${(results.data || []).length} Zeilen`);
-
-          const headers = results.meta.fields || [];
-          const result = parseDataArray(results.data || [], timestampField, powerField, headers, powerUnit);
-          result.csvMetadata = extractedMetadata;
-          resolve(result);
-        },
-        error: (error) => {
-          console.error('CSV-Parsing-Fehler:', error);
-          resolve({
-            data: [],
-            errors: [`CSV-Parsing-Fehler: ${error.message}`],
-            quality_score: 0,
-            metadata: {
-              total_records: 0,
-              data_start: '',
-              data_end: '',
-              gaps: 0,
-              duplicates: 0
-            }
-          });
-        }
-      });
-    };
-
-    reader.onerror = () => {
+    const handleError = () => {
       resolve({
         data: [],
         errors: ['Fehler beim Lesen der Datei'],
@@ -310,7 +301,47 @@ const parseLoadProfileCSVOptimized = (
       });
     };
 
-    reader.readAsText(file);
+    // Datei mit automatischer Encoding-Erkennung lesen (UTF-8 / Windows-1252)
+    readFileAsText(file)
+      .then((text) => {
+        const { cleanedText, metadataRows, extractedMetadata } = detectAndSkipMetadataRows(text);
+
+        if (metadataRows > 0) {
+          console.log(`Überspringe ${metadataRows} Metadaten-Zeilen`);
+          console.log('Extrahierte Metadaten:', extractedMetadata);
+        }
+
+        Papa.parse(cleanedText, {
+          header: true,
+          skipEmptyLines: true,
+          dynamicTyping: false,
+          complete: (results) => {
+            const processingTime = Date.now() - startTime;
+            console.log(`CSV-Parsing abgeschlossen in ${processingTime}ms für ${(results.data || []).length} Zeilen`);
+
+            const headers = results.meta.fields || [];
+            const result = parseDataArray(results.data || [], timestampField, powerField, headers, powerUnit);
+            result.csvMetadata = extractedMetadata;
+            resolve(result);
+          },
+          error: (error) => {
+            console.error('CSV-Parsing-Fehler:', error);
+            resolve({
+              data: [],
+              errors: [`CSV-Parsing-Fehler: ${error.message}`],
+              quality_score: 0,
+              metadata: {
+                total_records: 0,
+                data_start: '',
+                data_end: '',
+                gaps: 0,
+                duplicates: 0
+              }
+            });
+          }
+        });
+      })
+      .catch(handleError);
   });
 };
 const parseDataArray = (

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Upload, File, CheckCircle, AlertCircle, X, Settings, Check } from 'lucide-react';
-import { parseFileData, ParseResult, detectColumns, ColumnSuggestion, detectAndSkipMetadataRows } from '../lib/csv-parser';
+import { parseFileData, ParseResult, detectColumns, ColumnSuggestion, detectAndSkipMetadataRows, readFileAsText } from '../lib/csv-parser';
 import { parseExcelFile } from '../lib/excel-parser';
 import { calculateKPIs } from '../lib/kpi-calculator';
 import { mapEnergyDirectionToProfileType } from '../lib/profile-type-mapper';
@@ -130,8 +130,8 @@ export default function FileUpload({
         setFileSampleData(newSampleData);
         setColumnSuggestions(newSuggestions);
       } else {
-        // Für CSV-Dateien eine kleine Vorschau laden
-        const text = await file.text();
+        // Für CSV-Dateien eine kleine Vorschau laden (mit Encoding-Erkennung UTF-8/Windows-1252)
+        const text = await readFileAsText(file);
 
         // Metadaten-Zeilen überspringen und echten Header finden
         const { cleanedText, metadataRows, extractedMetadata } = detectAndSkipMetadataRows(text);
