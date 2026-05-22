@@ -63,6 +63,41 @@ export default function LoadProfiles({
 
   const colors = selectedProfiles.map((profile, index) => getProfileColor(profile, index));
 
+  // Calculate total energy (kWh) per profile from chart data
+  const profileTotals = useMemo(() => {
+    if (!chartData || chartData.length === 0 || viewType === 'weekdayWeekend') return [];
+
+    return selectedProfiles.map((profile, index) => {
+      const profileNum = index + 1;
+      let totalKwh = 0;
+
+      if (viewType === 'hour') {
+        // 15-min intervals: sum avg_kw × 0.25h = kWh
+        chartData.forEach(row => {
+          const val = row[`profile${profileNum}_avg_kw`];
+          if (typeof val === 'number' && !isNaN(val)) {
+            totalKwh += val * 0.25;
+          }
+        });
+      } else {
+        // Bar chart views (year, month, week, day): sum _kwh directly
+        chartData.forEach(row => {
+          const val = row[`profile${profileNum}_kwh`];
+          if (typeof val === 'number' && !isNaN(val)) {
+            totalKwh += val;
+          }
+        });
+      }
+
+      return {
+        name: profile.name,
+        profileType: profile.profile_type,
+        totalKwh,
+        totalMwh: totalKwh / 1000
+      };
+    });
+  }, [chartData, selectedProfiles, viewType]);
+
   // Initialize Web Worker
   useEffect(() => {
     const aggregationWorker = new AggregationWorker();
@@ -390,7 +425,7 @@ export default function LoadProfiles({
 
       {/* Chart */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-wrap items-center gap-4 mb-6">
           <h3 className="text-lg font-medium text-gray-900">
             {viewType === 'year' && (yearViewMode === 'months' ? 'Jahresübersicht - Monate' : `Jahresübersicht - Alle Tage ${format(selectedDate, 'yyyy')}`)}
             {viewType === 'month' && `Monatsübersicht - ${format(selectedDate, 'MMMM yyyy', { locale: de })}`}
@@ -399,7 +434,7 @@ export default function LoadProfiles({
             {viewType === 'hour' && `15-Minuten-Profil - ${format(selectedDate, 'dd.MM.yyyy', { locale: de })}`}
             {viewType === 'weekdayWeekend' && 'Werktag vs. Wochenende - Durchschnittsprofile'}
           </h3>
-          
+
           {/* Profile Legend for Comparison Mode */}
           {isComparisonMode && selectedProfiles.length > 1 && (
             <div className="flex flex-wrap gap-2">
@@ -411,6 +446,32 @@ export default function LoadProfiles({
                 >
                   {profile.name}
                 </span>
+              ))}
+            </div>
+          )}
+
+          {/* Spacer to push totals to the right */}
+          <div className="flex-1" />
+
+          {/* Total energy per profile */}
+          {profileTotals.length > 0 && !isLoadingChartData && (
+            <div className="flex flex-wrap gap-3 items-center">
+              {profileTotals.map((pt, index) => (
+                <div
+                  key={index}
+                  className="text-right px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200"
+                >
+                  <div className="text-xs text-gray-500">
+                    {selectedProfiles.length > 1 && <span className="font-medium">{pt.name} – </span>}
+                    {pt.profileType === 'producer' ? 'Gesamteinspeisung' : 'Gesamtverbrauch'}
+                  </div>
+                  <div className="text-sm font-semibold text-gray-900">
+                    {formatLargeNumberGerman(pt.totalKwh)} kWh
+                    <span className="text-xs font-normal text-gray-400 ml-1">
+                      ({formatNumberGerman(pt.totalMwh)} MWh)
+                    </span>
+                  </div>
+                </div>
               ))}
             </div>
           )}

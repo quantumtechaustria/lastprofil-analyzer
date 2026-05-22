@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(find /c/Users/Sascha/Documents/CLAUDE ZUGRIFF/Lastprofil.com -name .env* -o -name *.env)",
-      "Bash(grep -r \"createContext\\\\|useContext\\\\|Provider\" /c/Users/Sascha/Documents/CLAUDE ZUGRIFF/Lastprofil.com/src --include=*.ts --include=*.tsx)"
+      "Bash(grep -r \"createContext\\\\|useContext\\\\|Provider\" /c/Users/Sascha/Documents/CLAUDE ZUGRIFF/Lastprofil.com/src --include=*.ts --include=*.tsx)",
+      "Bash(npx tsc:*)",
+      "Bash(find '/c/Users/Sascha/Documents/CLAUDE ZUGRIFF/Lastprofil.com/src' -type f \\\\\\(-name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx \\\\\\))"
     ]
   }
 }

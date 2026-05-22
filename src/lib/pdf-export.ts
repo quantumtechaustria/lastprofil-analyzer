@@ -12,6 +12,8 @@ interface ProfileData {
     peak_load_kw: number;
     load_factor: number;
     avg_power_kw: number;
+    peak_frequency_90_percent?: number;
+    usage_hours?: number;
     day_night_ratio?: { day_percent: number; night_percent: number };
   };
   site_address?: string;
@@ -95,18 +97,19 @@ export async function generateComparisonReport(data: PDFReportData): Promise<voi
 
   const consumerProfile = data.profiles.find(p => p.profile_type === 'consumer') || data.profiles[0];
   const producerProfile = data.profiles.find(p => p.profile_type === 'producer') || data.profiles[1];
+  const isSingleProfile = data.profiles.length === 1;
 
   const avgPowerConsumer = consumerProfile.kpis.annual_consumption_kwh / 8760;
   const loadFactorConsumer = (avgPowerConsumer / consumerProfile.kpis.peak_load_kw) * 100;
 
   let avgPowerProducer = 0;
   let loadFactorProducer = 0;
-  if (producerProfile) {
+  if (producerProfile && !isSingleProfile) {
     avgPowerProducer = producerProfile.kpis.annual_consumption_kwh / 8760;
     loadFactorProducer = (avgPowerProducer / producerProfile.kpis.peak_load_kw) * 100;
   }
 
-  await generatePage1(pdf, data, consumerProfile, producerProfile, avgPowerConsumer, loadFactorConsumer, avgPowerProducer, loadFactorProducer);
+  await generatePage1(pdf, data, consumerProfile, isSingleProfile ? undefined : producerProfile, avgPowerConsumer, loadFactorConsumer, avgPowerProducer, loadFactorProducer);
 
   if (data.economicAnalysis) {
     pdf.addPage();
@@ -150,12 +153,22 @@ async function generatePage1(
   pdf.setFont('helvetica', 'bold');
   pdf.text('Lastprofil-Analyse', 15, 22);
 
-  pdf.setFontSize(16);
-  pdf.setFont('helvetica', 'normal');
-  const subtitle = producerProfile
-    ? `${consumerProfile.name} vs. ${producerProfile.name}`
-    : consumerProfile.name;
-  pdf.text(subtitle, 15, 32);
+  const isSingleProfile = !producerProfile;
+  if (isSingleProfile) {
+    const singleProfile = data.profiles[0];
+    pdf.setFontSize(13);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(singleProfile.name, 15, 30);
+    if (singleProfile.meter_number) {
+      pdf.setFontSize(9);
+      pdf.setTextColor(colors.blue100);
+      pdf.text(`ZP: ${singleProfile.meter_number}`, 15, 36);
+    }
+  } else {
+    pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`${consumerProfile.name} vs. ${producerProfile.name}`, 15, 32);
+  }
 
   pdf.setFontSize(9);
   pdf.setFont('helvetica', 'normal');
@@ -238,109 +251,134 @@ async function generatePage1(
 
   y += 5;
 
-  pdf.setFontSize(16);
-  pdf.setFont('helvetica', 'bold');
-  pdf.setTextColor(colors.slate900);
-  pdf.text('Profil-Vergleich', 15, y);
-  y += 5;
+  if (isSingleProfile) {
+    // ── Kennzahlen (Einzelprofil) ──
+    const singleProfile = data.profiles[0];
+    const kpis = singleProfile.kpis;
+    const isProducer = singleProfile.profile_type === 'producer';
 
-  const boxWidth = (pageWidth - 35) / 2;
-  const leftBoxX = 15;
-  const rightBoxX = 15 + boxWidth + 5;
+    pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(colors.slate900);
+    pdf.text('Kennzahlen', 15, y);
+    y += 5;
 
-  pdf.setFillColor('#e8f4f8');
-  pdf.roundedRect(leftBoxX, y, boxWidth, 56, 3, 3, 'F');
+    const cardCount = 3;
+    const cardGap = 4;
+    const cardWidth = (pageWidth - 30 - (cardCount - 1) * cardGap) / cardCount;
+    const cardHeight = 36;
 
-  pdf.setFillColor('#1d67a9');
-  pdf.circle(leftBoxX + 8, y + 8, 5, 'F');
-  pdf.setTextColor('#ffffff');
-  pdf.setFontSize(14);
-  pdf.setFont('helvetica', 'bold');
-  pdf.text('V', leftBoxX + 8, y + 10, { align: 'center' });
+    // Karte 1: Jahresverbrauch / Jahreseinspeisung
+    const card1X = 15;
+    pdf.setFillColor(colors.blue50);
+    pdf.roundedRect(card1X, y, cardWidth, cardHeight, 3, 3, 'F');
+    pdf.setDrawColor(colors.blue300);
+    pdf.setLineWidth(0.5);
+    pdf.roundedRect(card1X, y, cardWidth, cardHeight, 3, 3, 'S');
 
-  pdf.setFontSize(9);
-  pdf.setTextColor(colors.slate600);
-  pdf.setFont('helvetica', 'normal');
-  pdf.text('Verbraucher', leftBoxX + 16, y + 7);
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(colors.blue600);
+    pdf.text(isProducer ? 'Jahreseinspeisung' : 'Jahresverbrauch', card1X + cardWidth / 2, y + 8, { align: 'center' });
+    pdf.setFontSize(20);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(colors.blue700);
+    pdf.text(`${formatLargeNumberGerman(kpis.annual_consumption_kwh)} kWh`, card1X + cardWidth / 2, y + 20, { align: 'center' });
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(colors.slate500);
+    pdf.text(`${formatNumberGerman(kpis.annual_consumption_kwh / 1000)} MWh`, card1X + cardWidth / 2, y + 27, { align: 'center' });
 
-  pdf.setFontSize(14);
-  pdf.setTextColor(colors.slate900);
-  pdf.setFont('helvetica', 'bold');
-  const consumerNameLines = pdf.splitTextToSize(consumerProfile.name, boxWidth - 20);
-  pdf.text(consumerNameLines, leftBoxX + 16, y + 13);
+    // Karte 2: Spitzenlast
+    const card2X = card1X + cardWidth + cardGap;
+    pdf.setFillColor(colors.yellow50);
+    pdf.roundedRect(card2X, y, cardWidth, cardHeight, 3, 3, 'F');
+    pdf.setDrawColor('#f59e0b');
+    pdf.setLineWidth(0.5);
+    pdf.roundedRect(card2X, y, cardWidth, cardHeight, 3, 3, 'S');
 
-  let lineY = y + 16;
-  pdf.setFontSize(7);
-  pdf.setFont('helvetica', 'normal');
-  pdf.setTextColor(colors.slate500);
-  if (consumerProfile.site_address) {
-    pdf.text(consumerProfile.site_address, leftBoxX + 16, lineY);
-    lineY += 3;
-  }
-  if (consumerProfile.meter_number) {
-    pdf.text(`ZP: ${consumerProfile.meter_number}`, leftBoxX + 16, lineY);
-    lineY += 3;
-  }
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor('#b45309');
+    pdf.text('Spitzenlast', card2X + cardWidth / 2, y + 8, { align: 'center' });
+    pdf.setFontSize(20);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(colors.slate900);
+    pdf.text(`${formatLargeNumberGerman(kpis.peak_load_kw)} kW`, card2X + cardWidth / 2, y + 20, { align: 'center' });
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(colors.slate500);
+    if (kpis.peak_frequency_90_percent != null) {
+      pdf.text(`${formatNumberGerman(kpis.peak_frequency_90_percent)}% über 90%`, card2X + cardWidth / 2, y + 27, { align: 'center' });
+    }
 
-  lineY += 2;
-  pdf.setFontSize(9);
-  pdf.setFont('helvetica', 'normal');
-  pdf.setTextColor(colors.slate700);
+    // Karte 3: Lastfaktor
+    const card3X = card2X + cardWidth + cardGap;
+    pdf.setFillColor(colors.green50);
+    pdf.roundedRect(card3X, y, cardWidth, cardHeight, 3, 3, 'F');
+    pdf.setDrawColor(colors.green600);
+    pdf.setLineWidth(0.5);
+    pdf.roundedRect(card3X, y, cardWidth, cardHeight, 3, 3, 'S');
 
-  pdf.text('Jahresenergie:', leftBoxX + 4, lineY);
-  pdf.setFont('helvetica', 'bold');
-  pdf.text(`${formatLargeNumberGerman(consumerProfile.kpis.annual_consumption_kwh)} kWh`, leftBoxX + boxWidth - 4, lineY, { align: 'right' });
-  lineY += 5;
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(colors.green700);
+    pdf.text('Lastfaktor', card3X + cardWidth / 2, y + 8, { align: 'center' });
+    pdf.setFontSize(20);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(colors.slate900);
+    pdf.text(`${formatNumberGerman(kpis.load_factor)}%`, card3X + cardWidth / 2, y + 20, { align: 'center' });
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(colors.slate500);
+    if (kpis.usage_hours != null) {
+      pdf.text(`${formatIntegerGerman(kpis.usage_hours)} Volllaststunden`, card3X + cardWidth / 2, y + 27, { align: 'center' });
+    }
 
-  pdf.setFont('helvetica', 'normal');
-  pdf.text('Spitzenlast:', leftBoxX + 4, lineY);
-  pdf.setFont('helvetica', 'bold');
-  pdf.text(`${formatLargeNumberGerman(consumerProfile.kpis.peak_load_kw)} kW`, leftBoxX + boxWidth - 4, lineY, { align: 'right' });
-  lineY += 5;
+    y += cardHeight + 10;
+  } else {
+    // ── Profil-Vergleich (zwei Profile) ──
+    pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(colors.slate900);
+    pdf.text('Profil-Vergleich', 15, y);
+    y += 5;
 
-  pdf.setFont('helvetica', 'normal');
-  pdf.text('Durchschnittslast:', leftBoxX + 4, lineY);
-  pdf.setFont('helvetica', 'bold');
-  pdf.text(`${formatNumberGerman(avgPowerConsumer)} kW`, leftBoxX + boxWidth - 4, lineY, { align: 'right' });
-  lineY += 5;
+    const boxWidth = (pageWidth - 35) / 2;
+    const leftBoxX = 15;
+    const rightBoxX = 15 + boxWidth + 5;
 
-  pdf.setFont('helvetica', 'normal');
-  pdf.text('Lastfaktor:', leftBoxX + 4, lineY);
-  pdf.setFont('helvetica', 'bold');
-  pdf.text(`${formatNumberGerman(loadFactorConsumer)}%`, leftBoxX + boxWidth - 4, lineY, { align: 'right' });
+    pdf.setFillColor('#e8f4f8');
+    pdf.roundedRect(leftBoxX, y, boxWidth, 56, 3, 3, 'F');
 
-  if (producerProfile) {
-    pdf.setFillColor('#fef9e6');
-    pdf.roundedRect(rightBoxX, y, boxWidth, 56, 3, 3, 'F');
-
-    pdf.setFillColor('#eab308');
-    pdf.circle(rightBoxX + 8, y + 8, 5, 'F');
+    pdf.setFillColor('#1d67a9');
+    pdf.circle(leftBoxX + 8, y + 8, 5, 'F');
     pdf.setTextColor('#ffffff');
     pdf.setFontSize(14);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('E', rightBoxX + 8, y + 10, { align: 'center' });
+    pdf.text('V', leftBoxX + 8, y + 10, { align: 'center' });
 
     pdf.setFontSize(9);
     pdf.setTextColor(colors.slate600);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Einspeiser', rightBoxX + 16, y + 7);
+    pdf.text('Verbraucher', leftBoxX + 16, y + 7);
 
     pdf.setFontSize(14);
     pdf.setTextColor(colors.slate900);
     pdf.setFont('helvetica', 'bold');
-    const producerNameLines = pdf.splitTextToSize(producerProfile.name, boxWidth - 20);
-    pdf.text(producerNameLines, rightBoxX + 16, y + 13);
+    const consumerNameLines = pdf.splitTextToSize(consumerProfile.name, boxWidth - 20);
+    pdf.text(consumerNameLines, leftBoxX + 16, y + 13);
 
-    lineY = y + 16;
+    let lineY = y + 16;
     pdf.setFontSize(7);
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(colors.slate500);
-    if (producerProfile.site_address) {
-      pdf.text(producerProfile.site_address, rightBoxX + 16, lineY);
+    if (consumerProfile.site_address) {
+      pdf.text(consumerProfile.site_address, leftBoxX + 16, lineY);
       lineY += 3;
     }
-    if (producerProfile.meter_number) {
-      pdf.text(`ZP: ${producerProfile.meter_number}`, rightBoxX + 16, lineY);
+    if (consumerProfile.meter_number) {
+      pdf.text(`ZP: ${consumerProfile.meter_number}`, leftBoxX + 16, lineY);
       lineY += 3;
     }
 
@@ -349,30 +387,93 @@ async function generatePage1(
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(colors.slate700);
 
-    pdf.text('Jahresenergie:', rightBoxX + 4, lineY);
+    pdf.text('Jahresenergie:', leftBoxX + 4, lineY);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(`${formatLargeNumberGerman(producerProfile.kpis.annual_consumption_kwh)} kWh`, rightBoxX + boxWidth - 4, lineY, { align: 'right' });
+    pdf.text(`${formatLargeNumberGerman(consumerProfile.kpis.annual_consumption_kwh)} kWh`, leftBoxX + boxWidth - 4, lineY, { align: 'right' });
     lineY += 5;
 
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Spitzenlast:', rightBoxX + 4, lineY);
+    pdf.text('Spitzenlast:', leftBoxX + 4, lineY);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(`${formatLargeNumberGerman(producerProfile.kpis.peak_load_kw)} kW`, rightBoxX + boxWidth - 4, lineY, { align: 'right' });
+    pdf.text(`${formatLargeNumberGerman(consumerProfile.kpis.peak_load_kw)} kW`, leftBoxX + boxWidth - 4, lineY, { align: 'right' });
     lineY += 5;
 
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Durchschnittslast:', rightBoxX + 4, lineY);
+    pdf.text('Durchschnittslast:', leftBoxX + 4, lineY);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(`${formatNumberGerman(avgPowerProducer)} kW`, rightBoxX + boxWidth - 4, lineY, { align: 'right' });
+    pdf.text(`${formatNumberGerman(avgPowerConsumer)} kW`, leftBoxX + boxWidth - 4, lineY, { align: 'right' });
     lineY += 5;
 
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Lastfaktor:', rightBoxX + 4, lineY);
+    pdf.text('Lastfaktor:', leftBoxX + 4, lineY);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(`${formatNumberGerman(loadFactorProducer)}%`, rightBoxX + boxWidth - 4, lineY, { align: 'right' });
+    pdf.text(`${formatNumberGerman(loadFactorConsumer)}%`, leftBoxX + boxWidth - 4, lineY, { align: 'right' });
+
+    if (producerProfile) {
+      pdf.setFillColor('#fef9e6');
+      pdf.roundedRect(rightBoxX, y, boxWidth, 56, 3, 3, 'F');
+
+      pdf.setFillColor('#eab308');
+      pdf.circle(rightBoxX + 8, y + 8, 5, 'F');
+      pdf.setTextColor('#ffffff');
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('E', rightBoxX + 8, y + 10, { align: 'center' });
+
+      pdf.setFontSize(9);
+      pdf.setTextColor(colors.slate600);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Einspeiser', rightBoxX + 16, y + 7);
+
+      pdf.setFontSize(14);
+      pdf.setTextColor(colors.slate900);
+      pdf.setFont('helvetica', 'bold');
+      const producerNameLines = pdf.splitTextToSize(producerProfile.name, boxWidth - 20);
+      pdf.text(producerNameLines, rightBoxX + 16, y + 13);
+
+      lineY = y + 16;
+      pdf.setFontSize(7);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(colors.slate500);
+      if (producerProfile.site_address) {
+        pdf.text(producerProfile.site_address, rightBoxX + 16, lineY);
+        lineY += 3;
+      }
+      if (producerProfile.meter_number) {
+        pdf.text(`ZP: ${producerProfile.meter_number}`, rightBoxX + 16, lineY);
+        lineY += 3;
+      }
+
+      lineY += 2;
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(colors.slate700);
+
+      pdf.text('Jahresenergie:', rightBoxX + 4, lineY);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`${formatLargeNumberGerman(producerProfile.kpis.annual_consumption_kwh)} kWh`, rightBoxX + boxWidth - 4, lineY, { align: 'right' });
+      lineY += 5;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Spitzenlast:', rightBoxX + 4, lineY);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`${formatLargeNumberGerman(producerProfile.kpis.peak_load_kw)} kW`, rightBoxX + boxWidth - 4, lineY, { align: 'right' });
+      lineY += 5;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Durchschnittslast:', rightBoxX + 4, lineY);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`${formatNumberGerman(avgPowerProducer)} kW`, rightBoxX + boxWidth - 4, lineY, { align: 'right' });
+      lineY += 5;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Lastfaktor:', rightBoxX + 4, lineY);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`${formatNumberGerman(loadFactorProducer)}%`, rightBoxX + boxWidth - 4, lineY, { align: 'right' });
+    }
+
+    y += 66;
   }
-
-  y += 66;
 
   pdf.setFontSize(16);
   pdf.setFont('helvetica', 'bold');
