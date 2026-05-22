@@ -169,7 +169,7 @@ export default function LoadProfileChart({
         gradientStart = '#eab308';
         gradientEnd = '#fbbf24';
       }
-      const dataKey = `profile${index + 1}_${viewType === 'hour' || viewType === 'weekdayWeekend' ? 'avg_kw' : 'kwh'}`;
+      const dataKey = `profile${index + 1}_${viewType === 'weekdayWeekend' ? 'avg_kw' : 'kwh'}`;
 
       if (viewType === 'weekdayWeekend') {
         // Special handling for weekday/weekend view

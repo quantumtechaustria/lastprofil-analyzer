@@ -71,23 +71,13 @@ export default function LoadProfiles({
       const profileNum = index + 1;
       let totalKwh = 0;
 
-      if (viewType === 'hour') {
-        // 15-min intervals: sum avg_kw × 0.25h = kWh
-        chartData.forEach(row => {
-          const val = row[`profile${profileNum}_avg_kw`];
-          if (typeof val === 'number' && !isNaN(val)) {
-            totalKwh += val * 0.25;
-          }
-        });
-      } else {
-        // Bar chart views (year, month, week, day): sum _kwh directly
-        chartData.forEach(row => {
-          const val = row[`profile${profileNum}_kwh`];
-          if (typeof val === 'number' && !isNaN(val)) {
-            totalKwh += val;
-          }
-        });
-      }
+      // All views (year, month, week, day, hour) use _kwh
+      chartData.forEach(row => {
+        const val = row[`profile${profileNum}_kwh`];
+        if (typeof val === 'number' && !isNaN(val)) {
+          totalKwh += val;
+        }
+      });
 
       return {
         name: profile.name,
