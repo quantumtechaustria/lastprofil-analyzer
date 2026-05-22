@@ -8,10 +8,8 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer
 } from 'recharts';
-import { Loader2 } from 'lucide-react';
 import { formatNumberGerman, formatLargeNumberGerman } from '../../lib/utils';
 
 interface LoadProfileChartProps {
@@ -122,22 +120,27 @@ export default function LoadProfileChart({
   const shouldStackByType = isBarChart && isComparisonMode &&
     Object.values(profilesByType).some(profiles => profiles.length > 1);
 
+  // Check if any type has multiple profiles (for color variation)
+  const hasMultipleSameType = isComparisonMode &&
+    Object.values(profilesByType).some(profiles => profiles.length > 1);
+
   // Generate color variations for profiles of the same type
   const getColorForProfile = (profile: any, typeIndex: number, profileType: string): string => {
-    if (!shouldStackByType) {
-      return colors[typeIndex % colors.length];
-    }
-
     const profilesOfSameType = profilesByType[profileType] || [];
-    const indexInType = profilesOfSameType.findIndex(p => p.profile === profile);
 
-    if (profileType === 'consumer') {
-      const blueShades = ['#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#1e40af'];
-      return blueShades[indexInType % blueShades.length];
-    } else if (profileType === 'producer') {
-      const yellowShades = ['#fde047', '#facc15', '#eab308', '#f59e0b', '#f97316'];
-      return yellowShades[indexInType % yellowShades.length];
+    // If in comparison mode and multiple profiles share the same type, use color variations
+    if (hasMultipleSameType && profilesOfSameType.length > 1) {
+      const indexInType = profilesOfSameType.findIndex(p => p.profile === profile);
+
+      if (profileType === 'consumer') {
+        const blueShades = ['#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#1e40af'];
+        return blueShades[indexInType % blueShades.length];
+      } else if (profileType === 'producer') {
+        const yellowShades = ['#fde047', '#facc15', '#eab308', '#f59e0b', '#f97316'];
+        return yellowShades[indexInType % yellowShades.length];
+      }
     }
+
     return colors[typeIndex % colors.length];
   };
 
@@ -158,8 +161,10 @@ export default function LoadProfileChart({
       let gradientStart = color;
       let gradientEnd = color;
 
-      if (shouldStackThisType) {
-        // For stacked profiles, use the color variation directly
+      const hasSameTypeVariation = hasMultipleSameType && profilesOfSameType.length > 1;
+
+      if (hasSameTypeVariation) {
+        // For profiles with color variations, use the variation color directly
         gradientStart = color;
         gradientEnd = color;
       } else if (profile.profile_type === 'consumer') {
@@ -238,86 +243,87 @@ export default function LoadProfileChart({
   };
 
   return (
-    <ResponsiveContainer width="100%" height={400} id="load-profile-chart">
-      <ChartComponent
-        data={data}
-        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-        {...(isBarChart && isComparisonMode && selectedProfiles.length > 1 && !shouldStackByType ? {
-          barCategoryGap: "20%",
-          barGap: -10
-        } : {})}
-      >
-        <defs>
-          {selectedProfiles.map((profile, index) => {
-            const gradientId = `gradient-${profile.id || index}`;
-            let gradientStart, gradientEnd;
-
-            if (profile.profile_type === 'consumer') {
-              gradientStart = '#1d67a9';
-              gradientEnd = '#16abbd';
-            } else if (profile.profile_type === 'producer') {
-              gradientStart = '#eab308';
-              gradientEnd = '#fbbf24';
-            } else {
-              gradientStart = colors[index % colors.length];
-              gradientEnd = colors[index % colors.length];
-            }
-
-            return (
-              <linearGradient key={gradientId} id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={gradientStart} stopOpacity={1} />
-                <stop offset="100%" stopColor={gradientEnd} stopOpacity={1} />
-              </linearGradient>
-            );
-          })}
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-        <XAxis
-          dataKey={viewType === 'weekdayWeekend' ? 'time' :
-                   viewType === 'year' ? (yearViewMode === 'months' ? 'month' : 'day') :
-                   viewType === 'month' ? 'day' :
-                   viewType === 'week' ? 'day' :
-                   viewType === 'day' ? 'time' :
-                   viewType === 'hour' ? 'time' : 'time'}
-          stroke="#666"
-          fontSize={12}
-          angle={viewType === 'year' && yearViewMode === 'days' ? -45 : 0}
-          textAnchor={viewType === 'year' && yearViewMode === 'days' ? 'end' : 'middle'}
-          height={viewType === 'year' && yearViewMode === 'days' ? 80 : 60}
-          {...((viewType === 'day') ? {
-            ticks: Array.from({ length: 25 }, (_, i) => `${i.toString().padStart(2, '0')}:00`),
-            interval: 0,
-            tickFormatter: (value: string) => {
-              const hour = parseInt(value);
-              return hour % 2 === 0 ? value : '';
-            }
+    <div id="load-profile-chart">
+      <ResponsiveContainer width="100%" height={400}>
+        <ChartComponent
+          data={data}
+          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          {...(isBarChart && isComparisonMode && selectedProfiles.length > 1 && !shouldStackByType ? {
+            barCategoryGap: "20%",
+            barGap: -10
           } : {})}
-          {...((viewType === 'hour') ? {
-            interval: 'preserveStartEnd' as const,
-            tickFormatter: (value: string) => {
-              const [h, m] = value.split(':');
-              return m === '00' ? value : '';
-            }
-          } : {})}
-        />
-        <YAxis
-          stroke="#666"
-          fontSize={12}
-          tickFormatter={(value) => formatNumberGerman(value)}
-        />
-        <Tooltip
-          content={(props) => (
-            <CustomTooltip
-              {...props}
-              selectedProfiles={selectedProfiles}
-              viewType={viewType}
-              areProfilesStacked={shouldStackByType}
-            />
-          )}
-        />
-        <Legend />
-        {renderDataComponents()}
-      </ChartComponent>
-    </ResponsiveContainer>
+        >
+          <defs>
+            {selectedProfiles.map((profile, index) => {
+              const gradientId = `gradient-${profile.id || index}`;
+              let gradientStart, gradientEnd;
+
+              if (profile.profile_type === 'consumer') {
+                gradientStart = '#1d67a9';
+                gradientEnd = '#16abbd';
+              } else if (profile.profile_type === 'producer') {
+                gradientStart = '#eab308';
+                gradientEnd = '#fbbf24';
+              } else {
+                gradientStart = colors[index % colors.length];
+                gradientEnd = colors[index % colors.length];
+              }
+
+              return (
+                <linearGradient key={gradientId} id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={gradientStart} stopOpacity={1} />
+                  <stop offset="100%" stopColor={gradientEnd} stopOpacity={1} />
+                </linearGradient>
+              );
+            })}
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <XAxis
+            dataKey={viewType === 'weekdayWeekend' ? 'time' :
+                     viewType === 'year' ? (yearViewMode === 'months' ? 'month' : 'day') :
+                     viewType === 'month' ? 'day' :
+                     viewType === 'week' ? 'day' :
+                     viewType === 'day' ? 'time' :
+                     viewType === 'hour' ? 'time' : 'time'}
+            stroke="#666"
+            fontSize={12}
+            angle={viewType === 'year' && yearViewMode === 'days' ? -45 : 0}
+            textAnchor={viewType === 'year' && yearViewMode === 'days' ? 'end' : 'middle'}
+            height={viewType === 'year' && yearViewMode === 'days' ? 80 : 60}
+            {...((viewType === 'day') ? {
+              ticks: Array.from({ length: 25 }, (_, i) => `${i.toString().padStart(2, '0')}:00`),
+              interval: 0,
+              tickFormatter: (value: string) => {
+                const hour = parseInt(value);
+                return hour % 2 === 0 ? value : '';
+              }
+            } : {})}
+            {...((viewType === 'hour') ? {
+              interval: 'preserveStartEnd' as const,
+              tickFormatter: (value: string) => {
+                const [h, m] = value.split(':');
+                return m === '00' ? value : '';
+              }
+            } : {})}
+          />
+          <YAxis
+            stroke="#666"
+            fontSize={12}
+            tickFormatter={(value) => formatNumberGerman(value)}
+          />
+          <Tooltip
+            content={(props) => (
+              <CustomTooltip
+                {...props}
+                selectedProfiles={selectedProfiles}
+                viewType={viewType}
+                areProfilesStacked={shouldStackByType}
+              />
+            )}
+          />
+          {renderDataComponents()}
+        </ChartComponent>
+      </ResponsiveContainer>
+    </div>
   );
 }

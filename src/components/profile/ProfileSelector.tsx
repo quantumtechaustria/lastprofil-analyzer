@@ -21,9 +21,35 @@ export default function ProfileSelector({
     return selectedProfiles.some(p => p.id === profile.id);
   };
 
+  // Group selected profiles by type for color variation
+  const profilesByType = selectedProfiles.reduce((acc, profile) => {
+    const type = profile.profile_type || 'unknown';
+    if (!acc[type]) acc[type] = [];
+    acc[type].push(profile);
+    return acc;
+  }, {} as Record<string, any[]>);
+
+  const hasMultipleSameType = Object.values(profilesByType).some((p: any[]) => p.length > 1);
+
   const getProfileColor = (profile: any) => {
     const index = selectedProfiles.findIndex(p => p.id === profile.id);
-    return index >= 0 ? colors[index % colors.length] : '#6b7280';
+    if (index < 0) return '#6b7280';
+
+    const profileType = profile.profile_type || 'unknown';
+    const profilesOfSameType = profilesByType[profileType] || [];
+
+    if (hasMultipleSameType && profilesOfSameType.length > 1) {
+      const indexInType = profilesOfSameType.findIndex((p: any) => p.id === profile.id);
+      if (profileType === 'consumer') {
+        const blueShades = ['#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#1e40af'];
+        return blueShades[indexInType % blueShades.length];
+      } else if (profileType === 'producer') {
+        const yellowShades = ['#fde047', '#facc15', '#eab308', '#f59e0b', '#f97316'];
+        return yellowShades[indexInType % yellowShades.length];
+      }
+    }
+
+    return colors[index % colors.length];
   };
 
   if (!isComparisonMode) {
@@ -42,20 +68,9 @@ export default function ProfileSelector({
         
         {selectedProfiles.length > 0 && (
           <div className="mb-6 p-4 bg-emerald-50 rounded-lg">
-            <h4 className="font-medium text-emerald-800 mb-2">
-              Ausgewählte Profile ({selectedProfiles.length})
+            <h4 className="font-medium text-emerald-800">
+              {selectedProfiles.length} {selectedProfiles.length === 1 ? 'Profil' : 'Profile'} ausgewählt
             </h4>
-            <div className="flex flex-wrap gap-2">
-              {selectedProfiles.map((profile, index) => (
-                <span
-                  key={profile.id}
-                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium text-white"
-                  style={{ backgroundColor: colors[index % colors.length] }}
-                >
-                  {profile.name}
-                </span>
-              ))}
-            </div>
           </div>
         )}
       </div>

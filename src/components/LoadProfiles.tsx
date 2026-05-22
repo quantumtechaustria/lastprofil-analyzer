@@ -414,8 +414,41 @@ export default function LoadProfiles({
       />
 
       {/* Chart */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex flex-wrap items-center gap-4 mb-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 relative">
+        {/* Legend top-right corner of card */}
+        {selectedProfiles.length > 0 && !isLoadingChartData && (
+          <div className="absolute top-6 right-6 z-10 bg-white rounded-lg border border-gray-200 px-3 py-2 shadow-sm">
+            {selectedProfiles.map((profile, index) => {
+              const profileType = profile.profile_type || 'unknown';
+              const profilesByType = selectedProfiles.filter(p => (p.profile_type || 'unknown') === profileType);
+              const hasMultiple = isComparisonMode && profilesByType.length > 1;
+              let color = colors[index % colors.length];
+
+              if (hasMultiple) {
+                const indexInType = profilesByType.findIndex(p => p.id === profile.id);
+                if (profileType === 'consumer') {
+                  const blueShades = ['#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#1e40af'];
+                  color = blueShades[indexInType % blueShades.length];
+                } else if (profileType === 'producer') {
+                  const yellowShades = ['#fde047', '#facc15', '#eab308', '#f59e0b', '#f97316'];
+                  color = yellowShades[indexInType % yellowShades.length];
+                }
+              }
+
+              return (
+                <div key={profile.id} className="flex items-center gap-2 py-0.5">
+                  <div
+                    className="w-3 h-3 rounded-sm"
+                    style={{ backgroundColor: color }}
+                  />
+                  <span className="text-xs text-gray-700 whitespace-nowrap">{profile.name}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="mb-6">
           <h3 className="text-lg font-medium text-gray-900">
             {viewType === 'year' && (yearViewMode === 'months' ? 'Jahresübersicht - Monate' : `Jahresübersicht - Alle Tage ${format(selectedDate, 'yyyy')}`)}
             {viewType === 'month' && `Monatsübersicht - ${format(selectedDate, 'MMMM yyyy', { locale: de })}`}
@@ -425,44 +458,46 @@ export default function LoadProfiles({
             {viewType === 'weekdayWeekend' && 'Werktag vs. Wochenende - Durchschnittsprofile'}
           </h3>
 
-          {/* Profile Legend for Comparison Mode */}
-          {isComparisonMode && selectedProfiles.length > 1 && (
-            <div className="flex flex-wrap gap-2">
-              {selectedProfiles.map((profile, index) => (
-                <span
-                  key={profile.id}
-                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium text-white"
-                  style={{ backgroundColor: colors[index % colors.length] }}
-                >
-                  {profile.name}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Spacer to push totals to the right */}
-          <div className="flex-1" />
-
           {/* Total energy per profile */}
           {profileTotals.length > 0 && !isLoadingChartData && (
-            <div className="flex flex-wrap gap-3 items-center">
-              {profileTotals.map((pt, index) => (
-                <div
-                  key={index}
-                  className="text-right px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200"
-                >
-                  <div className="text-xs text-gray-500">
-                    {selectedProfiles.length > 1 && <span className="font-medium">{pt.name} – </span>}
-                    {pt.profileType === 'producer' ? 'Gesamteinspeisung' : 'Gesamtverbrauch'}
+            <div className="flex flex-wrap gap-3 items-center mt-2">
+              {profileTotals.map((pt, index) => {
+                const profile = selectedProfiles[index];
+                const profileType = profile?.profile_type || 'unknown';
+                const profilesOfSameType = selectedProfiles.filter(p => (p.profile_type || 'unknown') === profileType);
+                const hasMultiple = isComparisonMode && profilesOfSameType.length > 1;
+                let color = colors[index % colors.length];
+
+                if (hasMultiple) {
+                  const indexInType = profilesOfSameType.findIndex(p => p.id === profile.id);
+                  if (profileType === 'consumer') {
+                    const blueShades = ['#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#1e40af'];
+                    color = blueShades[indexInType % blueShades.length];
+                  } else if (profileType === 'producer') {
+                    const yellowShades = ['#fde047', '#facc15', '#eab308', '#f59e0b', '#f97316'];
+                    color = yellowShades[indexInType % yellowShades.length];
+                  }
+                }
+
+                return (
+                  <div
+                    key={index}
+                    className="px-3 py-1.5 rounded-lg border"
+                    style={{ backgroundColor: `${color}15`, borderColor: `${color}40` }}
+                  >
+                    <div className="text-xs" style={{ color }}>
+                      {selectedProfiles.length > 1 && <span className="font-medium">{pt.name} – </span>}
+                      {pt.profileType === 'producer' ? 'Gesamteinspeisung' : 'Gesamtverbrauch'}
+                    </div>
+                    <div className="text-sm font-semibold text-gray-900">
+                      {formatLargeNumberGerman(pt.totalKwh)} kWh
+                      <span className="text-xs font-normal text-gray-400 ml-1">
+                        ({formatNumberGerman(pt.totalMwh)} MWh)
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-sm font-semibold text-gray-900">
-                    {formatLargeNumberGerman(pt.totalKwh)} kWh
-                    <span className="text-xs font-normal text-gray-400 ml-1">
-                      ({formatNumberGerman(pt.totalMwh)} MWh)
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
