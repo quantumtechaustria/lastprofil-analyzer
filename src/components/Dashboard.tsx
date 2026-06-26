@@ -301,7 +301,7 @@ export default function Dashboard({
                             </p>
                             <p className="text-xs font-semibold">
                               {profile.kpis?.annual_consumption_kwh
-                                ? `${formatLargeNumberGerman(profile.kpis.annual_consumption_kwh / 1000)} MWh`
+                                ? `${formatIntegerGerman(profile.kpis.annual_consumption_kwh)} kWh`
                                 : 'N/A'
                               }
                             </p>
