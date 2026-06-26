@@ -387,7 +387,7 @@ export default function SpotPriceAnalysis({ profile, onResultChange }: SpotPrice
                   </div>
                 </div>
                 <p className="text-3xl font-bold text-amber-900">
-                  {formatNumberGerman(result.totalConsumptionKwh * parseFloat(handlingFee) / 100)} €
+                  {formatNumberGerman(-(result.totalConsumptionKwh * parseFloat(handlingFee) / 100))} €
                 </p>
                 <p className="text-xs text-amber-700 mt-1">
                   {formatIntegerGerman(result.totalConsumptionKwh)} kWh × {handlingFee} ct/kWh
@@ -508,7 +508,9 @@ export default function SpotPriceAnalysis({ profile, onResultChange }: SpotPrice
                 {parseFloat(egComparisonPrice) > 0 && (() => {
                   const egPrice = parseFloat(egComparisonPrice);
                   const fee = parseFloat(handlingFee) || 0;
-                  const spotTotal = result.totalCostEur + (result.totalConsumptionKwh * fee / 100);
+                  const feeAmount = result.totalConsumptionKwh * fee / 100;
+                  // Für Erzeuger reduziert die Handling Fee die Gutschrift, für Verbraucher erhöht sie die Kosten
+                  const spotTotal = isProducer ? result.totalCostEur - feeAmount : result.totalCostEur + feeAmount;
                   const egTotal = result.totalConsumptionKwh * egPrice / 100;
                   const difference = egTotal - spotTotal;
                   const spotIsBetter = isProducer ? spotTotal > egTotal : spotTotal < egTotal;
@@ -524,7 +526,7 @@ export default function SpotPriceAnalysis({ profile, onResultChange }: SpotPrice
                             {formatNumberGerman(spotTotal)} €
                           </p>
                           <p className="text-xs text-sky-700 mt-1">
-                            Ø {formatNumberGerman(result.averagePriceCtKwh + fee)} ct/kWh
+                            Ø {formatNumberGerman(isProducer ? result.averagePriceCtKwh - fee : result.averagePriceCtKwh + fee)} ct/kWh
                           </p>
                         </div>
 
@@ -588,7 +590,8 @@ export default function SpotPriceAnalysis({ profile, onResultChange }: SpotPrice
                                 try {
                                   const [year, month] = monthData.month.split('-');
                                   const monthName = format(new Date(parseInt(year), parseInt(month) - 1), 'MMM yyyy', { locale: de });
-                                  const monthSpot = monthData.costEur + (monthData.consumptionKwh * fee / 100);
+                                  const monthFeeAmount = monthData.consumptionKwh * fee / 100;
+                                  const monthSpot = isProducer ? monthData.costEur - monthFeeAmount : monthData.costEur + monthFeeAmount;
                                   const monthEg = monthData.consumptionKwh * egPrice / 100;
                                   const monthDiff = monthEg - monthSpot;
                                   const monthSpotBetter = monthDiff < 0;

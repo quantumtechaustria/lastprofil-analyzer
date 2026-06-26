@@ -945,7 +945,7 @@ function generateSpotAnalysisPage(
 
   if (hasHandlingFee) {
     const box4X = box3X + kpiBoxWidth + 4;
-    const handlingCostEur = spot.totalConsumptionKwh * handlingFee / 100;
+    const handlingCostEur = -(spot.totalConsumptionKwh * handlingFee / 100);
 
     pdf.setFillColor(colors.yellow100);
     pdf.roundedRect(box4X, y, kpiBoxWidth, kpiHeight, 3, 3, 'F');
@@ -969,7 +969,8 @@ function generateSpotAnalysisPage(
   y += kpiHeight + 10;
 
   if (hasHandlingFee) {
-    const totalWithFee = spot.totalCostEur + (spot.totalConsumptionKwh * handlingFee / 100);
+    const feeAmount = spot.totalConsumptionKwh * handlingFee / 100;
+    const totalWithFee = isProducer ? spot.totalCostEur - feeAmount : spot.totalCostEur + feeAmount;
 
     pdf.setFillColor(colors.slate50);
     pdf.roundedRect(15, y, pageWidth - 30, 18, 3, 3, 'F');
@@ -1095,7 +1096,8 @@ function generateSpotEgComparisonPage(
 
   y = 40;
 
-  const spotTotal = spot.totalCostEur + (spot.totalConsumptionKwh * handlingFee / 100);
+  const feeAmount = spot.totalConsumptionKwh * handlingFee / 100;
+  const spotTotal = isProducer ? spot.totalCostEur - feeAmount : spot.totalCostEur + feeAmount;
   const egTotal = spot.totalConsumptionKwh * egPrice / 100;
   const difference = egTotal - spotTotal;
   const spotIsBetter = isProducer ? spotTotal > egTotal : spotTotal < egTotal;
@@ -1127,7 +1129,7 @@ function generateSpotEgComparisonPage(
   pdf.setFontSize(8);
   pdf.setFont('helvetica', 'normal');
   pdf.setTextColor(colors.slate500);
-  pdf.text(`Ø ${formatNumberGerman(spot.averagePriceCtKwh + handlingFee)} ct/kWh`, 15 + boxWidth / 2, y + 28, { align: 'center' });
+  pdf.text(`Ø ${formatNumberGerman(isProducer ? spot.averagePriceCtKwh - handlingFee : spot.averagePriceCtKwh + handlingFee)} ct/kWh`, 15 + boxWidth / 2, y + 28, { align: 'center' });
 
   // EG box
   const egBoxX = 15 + boxWidth + 4;
@@ -1212,7 +1214,8 @@ function generateSpotEgComparisonPage(
           pdf.rect(15, y - 2, tableWidth, 7, 'F');
         }
 
-        const monthSpot = monthData.costEur + (monthData.consumptionKwh * handlingFee / 100);
+        const monthFeeAmount = monthData.consumptionKwh * handlingFee / 100;
+        const monthSpot = isProducer ? monthData.costEur - monthFeeAmount : monthData.costEur + monthFeeAmount;
         const monthEg = monthData.consumptionKwh * egPrice / 100;
         const monthDiff = monthEg - monthSpot;
 

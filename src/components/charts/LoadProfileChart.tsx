@@ -299,11 +299,9 @@ export default function LoadProfileChart({
               }
             } : {})}
             {...((viewType === 'hour') ? {
-              interval: 'preserveStartEnd' as const,
-              tickFormatter: (value: string) => {
-                const [h, m] = value.split(':');
-                return m === '00' ? value : '';
-              }
+              ticks: Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`),
+              interval: 0,
+              tickFormatter: (value: string) => value
             } : {})}
           />
           <YAxis
