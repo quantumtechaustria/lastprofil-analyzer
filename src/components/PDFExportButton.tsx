@@ -13,6 +13,7 @@ interface PDFExportButtonProps {
   spotHandlingFee?: number;
   spotDateRange?: { start: string; end: string };
   spotEgComparisonPrice?: number;
+  fixedPriceAnalysis?: any;
 }
 
 export default function PDFExportButton({
@@ -26,6 +27,7 @@ export default function PDFExportButton({
   spotHandlingFee,
   spotDateRange,
   spotEgComparisonPrice,
+  fixedPriceAnalysis,
 }: PDFExportButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -66,6 +68,7 @@ export default function PDFExportButton({
         spotHandlingFee,
         spotDateRange,
         spotEgComparisonPrice,
+        fixedPriceAnalysis,
       };
 
       await generateComparisonReport(reportData);

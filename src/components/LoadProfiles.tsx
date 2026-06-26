@@ -9,6 +9,7 @@ import ProfileKPICards from './profile/ProfileKPICards';
 import ViewControls from './profile/ViewControls';
 import EconomicAnalysisView from './EconomicAnalysisView';
 import SpotPriceAnalysis from './SpotPriceAnalysis';
+import FixedPriceAnalysis from './FixedPriceAnalysis';
 import PDFExportButton from './PDFExportButton';
 import { formatNumberGerman, formatLargeNumberGerman, formatIntegerGerman } from '../lib/utils';
 import AggregationWorker from '../workers/aggregation.worker?worker';
@@ -48,6 +49,7 @@ export default function LoadProfiles({
   const [spotEgComparisonPrice, setSpotEgComparisonPrice] = useState<number | undefined>(undefined);
   const [spotHandlingFee, setSpotHandlingFee] = useState<number>(0);
   const [spotDateRange, setSpotDateRange] = useState<{ start: string; end: string }>({ start: '', end: '' });
+  const [fixedPriceAnalysisResult, setFixedPriceAnalysisResult] = useState<any>(null);
 
   // Color palette: Consumer (blue) and Producer (yellow) - start colors for gradients
   const getProfileColor = (profile: any, index: number) => {
@@ -370,6 +372,7 @@ export default function LoadProfiles({
             spotHandlingFee={spotHandlingFee}
             spotDateRange={spotDateRange}
             spotEgComparisonPrice={spotEgComparisonPrice}
+            fixedPriceAnalysis={fixedPriceAnalysisResult}
           />
         </div>
       </div>
@@ -538,6 +541,14 @@ export default function LoadProfiles({
             setSpotDateRange({ start, end });
             setSpotEgComparisonPrice(egPrice);
           }}
+        />
+      )}
+
+      {/* Fixed Price Analysis - Show for single profile mode */}
+      {!isComparisonMode && selectedProfiles.length === 1 && (
+        <FixedPriceAnalysis
+          profile={selectedProfiles[0]}
+          onResultChange={setFixedPriceAnalysisResult}
         />
       )}
     </div>

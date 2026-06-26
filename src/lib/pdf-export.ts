@@ -60,6 +60,18 @@ export interface PDFReportData {
   spotHandlingFee?: number;
   spotDateRange?: { start: string; end: string };
   spotEgComparisonPrice?: number;
+  fixedPriceAnalysis?: FixedPriceAnalysisData;
+}
+
+export interface FixedPriceAnalysisData {
+  totalKwh: number;
+  priceNow: number;
+  priceNew: number;
+  costNow: number;
+  costNew: number;
+  savings: number;
+  isProducer: boolean;
+  dateRange: { start: string; end: string };
 }
 
 const colors = {
@@ -122,7 +134,12 @@ export async function generateComparisonReport(data: PDFReportData): Promise<voi
     generateSpotAnalysisPage(pdf, data, spotProfile);
   }
 
-  addFooters(pdf, !!data.economicAnalysis || !!data.spotAnalysis);
+  if (data.fixedPriceAnalysis) {
+    pdf.addPage();
+    generateFixedPriceAnalysisPage(pdf, data);
+  }
+
+  addFooters(pdf, !!data.economicAnalysis || !!data.spotAnalysis || !!data.fixedPriceAnalysis);
 
   const fileName = `Lastprofil_Analyse_${format(new Date(), 'yyyy-MM-dd_HHmm')}.pdf`;
   pdf.save(fileName);
@@ -1282,6 +1299,151 @@ function generateSpotEgComparisonPage(
     pdf.text(`Handling Fee: ${formatNumberGerman(handlingFee)} ct/kWh`, 80, y + 14);
   }
   pdf.text(`Ø Spotpreis (gewichtet): ${formatNumberGerman(spot.averagePriceCtKwh)} ct/kWh`, handlingFee > 0 ? 140 : 80, y + 14);
+}
+
+function generateFixedPriceAnalysisPage(
+  pdf: jsPDF,
+  data: PDFReportData
+) {
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const fix = data.fixedPriceAnalysis!;
+  const isProducer = fix.isProducer;
+  let y = 0;
+
+  pdf.setFillColor(colors.green600);
+  pdf.rect(0, 0, pageWidth, 30, 'F');
+
+  pdf.setTextColor('#ffffff');
+  pdf.setFontSize(24);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('Fixpreis-Analyse', 15, 15);
+
+  pdf.setFontSize(12);
+  pdf.setFont('helvetica', 'normal');
+  if (fix.dateRange?.start && fix.dateRange?.end) {
+    const startStr = format(new Date(fix.dateRange.start), 'dd.MM.yyyy', { locale: de });
+    const endStr = format(new Date(fix.dateRange.end), 'dd.MM.yyyy', { locale: de });
+    pdf.text(`Zeitraum: ${startStr} - ${endStr}`, 15, 23);
+  }
+
+  y = 40;
+
+  pdf.setFontSize(16);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(colors.slate900);
+  pdf.text('Vergleich Fixpreis jetzt vs. neu', 15, y);
+  y += 6;
+
+  // KPI-Boxen: Gesamtverbrauch, Kosten jetzt, Kosten neu, Ersparnis
+  const kpiCount = 4;
+  const kpiBoxWidth = (pageWidth - 30 - (kpiCount - 1) * 4) / kpiCount;
+  const kpiHeight = 32;
+
+  // Box 1: Gesamtverbrauch / Gesamteinspeisung
+  pdf.setFillColor(colors.blue50);
+  pdf.roundedRect(15, y, kpiBoxWidth, kpiHeight, 3, 3, 'F');
+  pdf.setDrawColor(colors.blue300);
+  pdf.setLineWidth(0.5);
+  pdf.roundedRect(15, y, kpiBoxWidth, kpiHeight, 3, 3, 'S');
+  pdf.setFontSize(9);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setTextColor(colors.blue600);
+  pdf.text(isProducer ? 'Gesamteinspeisung' : 'Gesamtverbrauch', 15 + kpiBoxWidth / 2, y + 8, { align: 'center' });
+  pdf.setFontSize(16);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(colors.blue700);
+  pdf.text(`${formatIntegerGerman(fix.totalKwh)} kWh`, 15 + kpiBoxWidth / 2, y + 18, { align: 'center' });
+  pdf.setFontSize(8);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setTextColor(colors.slate500);
+  pdf.text(`${formatNumberGerman(fix.totalKwh / 1000)} MWh`, 15 + kpiBoxWidth / 2, y + 24, { align: 'center' });
+
+  // Box 2: Kosten / Gutschrift jetzt
+  const box2X = 15 + kpiBoxWidth + 4;
+  pdf.setFillColor(colors.cyan50);
+  pdf.roundedRect(box2X, y, kpiBoxWidth, kpiHeight, 3, 3, 'F');
+  pdf.setDrawColor(colors.cyan500);
+  pdf.setLineWidth(0.5);
+  pdf.roundedRect(box2X, y, kpiBoxWidth, kpiHeight, 3, 3, 'S');
+  pdf.setFontSize(9);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setTextColor('#0e7490');
+  pdf.text(isProducer ? 'Gutschrift jetzt' : 'Kosten jetzt', box2X + kpiBoxWidth / 2, y + 8, { align: 'center' });
+  pdf.setFontSize(16);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(`${formatNumberGerman(fix.costNow)} EUR`, box2X + kpiBoxWidth / 2, y + 18, { align: 'center' });
+  pdf.setFontSize(8);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setTextColor(colors.slate500);
+  pdf.text(`${formatNumberGerman(fix.priceNow)} ct/kWh`, box2X + kpiBoxWidth / 2, y + 24, { align: 'center' });
+
+  // Box 3: Kosten / Gutschrift neu
+  const box3X = box2X + kpiBoxWidth + 4;
+  pdf.setFillColor(colors.yellow50);
+  pdf.roundedRect(box3X, y, kpiBoxWidth, kpiHeight, 3, 3, 'F');
+  pdf.setDrawColor(colors.amber500);
+  pdf.setLineWidth(0.5);
+  pdf.roundedRect(box3X, y, kpiBoxWidth, kpiHeight, 3, 3, 'S');
+  pdf.setFontSize(9);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setTextColor('#b45309');
+  pdf.text(isProducer ? 'Gutschrift neu' : 'Kosten neu', box3X + kpiBoxWidth / 2, y + 8, { align: 'center' });
+  pdf.setFontSize(16);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(`${formatNumberGerman(fix.costNew)} EUR`, box3X + kpiBoxWidth / 2, y + 18, { align: 'center' });
+  pdf.setFontSize(8);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setTextColor(colors.slate500);
+  pdf.text(`${formatNumberGerman(fix.priceNew)} ct/kWh`, box3X + kpiBoxWidth / 2, y + 24, { align: 'center' });
+
+  // Box 4: Ersparnis / Mehrkosten
+  const isImprovement = fix.savings > 0;
+  const box4X = box3X + kpiBoxWidth + 4;
+  pdf.setFillColor(isImprovement ? colors.green50 : '#fef2f2');
+  pdf.roundedRect(box4X, y, kpiBoxWidth, kpiHeight, 3, 3, 'F');
+  pdf.setDrawColor(isImprovement ? colors.green600 : colors.red600);
+  pdf.setLineWidth(0.5);
+  pdf.roundedRect(box4X, y, kpiBoxWidth, kpiHeight, 3, 3, 'S');
+  pdf.setFontSize(9);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setTextColor(isImprovement ? colors.green700 : '#b91c1c');
+  pdf.text(isImprovement ? 'Ersparnis' : 'Mehrkosten', box4X + kpiBoxWidth / 2, y + 8, { align: 'center' });
+  pdf.setFontSize(16);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(`${formatNumberGerman(Math.abs(fix.savings))} EUR`, box4X + kpiBoxWidth / 2, y + 18, { align: 'center' });
+  pdf.setFontSize(8);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setTextColor(colors.slate500);
+  pdf.text('jetzt vs. neu', box4X + kpiBoxWidth / 2, y + 24, { align: 'center' });
+
+  y += kpiHeight + 12;
+
+  // Ergebnis-Zusammenfassung
+  pdf.setFillColor(isImprovement ? colors.green50 : '#fef2f2');
+  pdf.roundedRect(15, y, pageWidth - 30, 22, 3, 3, 'F');
+  pdf.setDrawColor(isImprovement ? colors.green600 : colors.red600);
+  pdf.setLineWidth(0.4);
+  pdf.roundedRect(15, y, pageWidth - 30, 22, 3, 3, 'S');
+
+  pdf.setFontSize(11);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(colors.slate900);
+  const fixPriceLabel = `neuem Fixpreis (${formatNumberGerman(fix.priceNew)} ct/kWh):`;
+  const resultLabel = isImprovement
+    ? (isProducer ? `Höhere Gutschrift mit ${fixPriceLabel}` : `Einsparung mit ${fixPriceLabel}`)
+    : (isProducer ? `Geringere Gutschrift mit ${fixPriceLabel}` : `Mehrkosten mit ${fixPriceLabel}`);
+  pdf.text(resultLabel, 20, y + 9);
+  pdf.setFontSize(16);
+  pdf.setTextColor(isImprovement ? colors.green700 : '#b91c1c');
+  pdf.text(`${formatNumberGerman(Math.abs(fix.savings))} EUR`, pageWidth - 20, y + 9, { align: 'right' });
+
+  pdf.setFontSize(8);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setTextColor(colors.slate600);
+  pdf.text(
+    `${formatIntegerGerman(fix.totalKwh)} kWh x (${formatNumberGerman(fix.priceNow)} - ${formatNumberGerman(fix.priceNew)}) ct/kWh`,
+    20, y + 17
+  );
 }
 
 function addFooters(pdf: jsPDF, hasSpotComparison: boolean) {
