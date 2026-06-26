@@ -506,12 +506,12 @@ async function generatePage1(
         backgroundColor: '#ffffff'
       });
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/jpeg', 0.85);
       const chartWidth = pageWidth - 30;
       const aspectRatio = canvas.height / canvas.width;
       const chartHeight = Math.min(90, (chartWidth * aspectRatio));
 
-      pdf.addImage(imgData, 'PNG', 15, y, chartWidth, chartHeight);
+      pdf.addImage(imgData, 'JPEG', 15, y, chartWidth, chartHeight, undefined, 'FAST');
       y += chartHeight + 10;
     } catch (error) {
       console.error('Error capturing load profile chart:', error);
@@ -846,7 +846,7 @@ async function generatePage2(
         backgroundColor: '#ffffff'
       });
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/jpeg', 0.85);
       const chartWidth = pageWidth - 30;
       const aspectRatio = canvas.height / canvas.width;
       const chartHeight = Math.min(100, (chartWidth * aspectRatio), pageHeight - y - 20);
@@ -854,7 +854,7 @@ async function generatePage2(
       pdf.setFillColor(colors.slate50);
       pdf.roundedRect(15, y, chartWidth, chartHeight, 3, 3, 'F');
 
-      pdf.addImage(imgData, 'PNG', 18, y + 3, chartWidth - 6, chartHeight - 6);
+      pdf.addImage(imgData, 'JPEG', 18, y + 3, chartWidth - 6, chartHeight - 6, undefined, 'FAST');
     } catch (error) {
       console.error('Error capturing economic chart:', error);
     }
