@@ -55,7 +55,7 @@ export default function Dashboard({
   };
 
   return (
-    <div className="min-h-full bg-gray-50">
+    <div className="min-h-full bg-[#f6f8fb]">
       {/* Hero Section with Gradient Background */}
       <div className="bg-gradient-to-br from-sky-600 via-sky-500 to-emerald-500 mx-6 mt-6 rounded-xl p-4 text-white shadow-lg">
         <div className="flex items-center justify-between">

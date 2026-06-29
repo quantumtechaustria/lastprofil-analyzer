@@ -465,7 +465,7 @@ export default function SpotPriceManagement() {
     <div className="px-6 py-8">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold">Spot-Preis Verwaltung</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Spot-Preis Verwaltung</h1>
           <div className="relative">
             <button
               onClick={() => setShowInfoBubble(!showInfoBubble)}

@@ -43,7 +43,7 @@ export default function Layout({
   ];
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-50">
+    <div className="h-screen flex overflow-hidden bg-[#f6f8fb]">
       {/* Mobile sidebar */}
       <div className={`fixed inset-0 flex z-40 md:hidden ${sidebarOpen ? '' : 'hidden'}`}>
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
@@ -122,10 +122,19 @@ export default function Layout({
                     <User className="h-5 w-5 text-gray-600" />
                   </div>
                 </div>
-                <div className="ml-3 flex-1">
-                  <p className="text-sm font-medium text-gray-700">{user.email}</p>
+                <div className="ml-3 flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-700 truncate">{user.email}</p>
                   {organization && (
-                    <p className="text-xs text-gray-500">{organization.name}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <p className="text-xs text-gray-500 truncate">{organization.name}</p>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${
+                        organization.subscription_plan === 'enterprise' ? 'bg-purple-100 text-purple-800' :
+                        organization.subscription_plan === 'pro' ? 'bg-blue-100 text-blue-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {organization.subscription_plan}
+                      </span>
+                    </div>
                   )}
                 </div>
                 <button
@@ -142,42 +151,30 @@ export default function Layout({
 
       {/* Main content */}
       <div className="flex flex-col w-0 flex-1 overflow-hidden md:ml-64">
-        {/* Top bar */}
-        <div className="relative z-10 flex-shrink-0 flex h-16 bg-white shadow-sm border-b border-gray-200">
+        {/* Top bar - mobile only (hamburger + plan badge); hidden on desktop */}
+        <div className="relative z-10 flex-shrink-0 flex h-16 bg-white shadow-sm border-b border-gray-200 md:hidden">
           <button
             type="button"
-            className="px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-sky-500 md:hidden"
+            className="px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-sky-500"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="h-6 w-6" />
           </button>
-          <div className="flex-1 px-4 flex justify-between items-center">
-            <div className="flex-1 flex">
-              <h1 className="text-2xl font-semibold text-gray-900 capitalize">
-                {currentPage === 'dashboard' ? 'Dashboard' :
-                 currentPage === 'upload' ? 'Upload' :
-                 currentPage === 'spot-prices' ? 'Spot-Preise' :
-                 currentPage === 'participation-factor' ? 'Teilnahmefaktor' :
-                 currentPage === 'billing' ? 'Abrechnung' :
-                 currentPage === 'settings' ? 'Einstellungen' : currentPage}
-              </h1>
-            </div>
+          <div className="flex-1 px-4 flex justify-end items-center">
             {organization && (
-              <div className="flex items-center space-x-4">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
-                  organization.subscription_plan === 'enterprise' ? 'bg-purple-100 text-purple-800' :
-                  organization.subscription_plan === 'pro' ? 'bg-blue-100 text-blue-800' :
-                  'bg-gray-100 text-gray-800'
-                }`}>
-                  {organization.subscription_plan}
-                </span>
-              </div>
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
+                organization.subscription_plan === 'enterprise' ? 'bg-purple-100 text-purple-800' :
+                organization.subscription_plan === 'pro' ? 'bg-blue-100 text-blue-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {organization.subscription_plan}
+              </span>
             )}
           </div>
         </div>
 
         {/* Page content */}
-        <main className="flex-1 relative overflow-y-auto focus:outline-none bg-gray-50">
+        <main className="flex-1 relative overflow-y-auto focus:outline-none bg-[#f6f8fb]">
           {children}
         </main>
       </div>

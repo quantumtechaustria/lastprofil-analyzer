@@ -335,7 +335,7 @@ export default function ParticipationFactor({ loadProfiles }: ParticipationFacto
     <div className="px-6 py-8">
       <div className="mb-8">
         <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold text-gray-900">Teilnahmefaktor Optimizer</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Teilnahmefaktor Optimizer</h1>
           <div
             className="relative"
             onMouseEnter={() => setShowInfoBubble(true)}
