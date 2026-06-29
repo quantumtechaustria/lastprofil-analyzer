@@ -78,17 +78,9 @@ export default function Dashboard({
 
       {/* Action Buttons */}
       <div className="px-6 pt-4">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center gap-3">
           {!isComparisonMode ? (
             <>
-              <button
-                onClick={handleUploadClick}
-                className="inline-flex items-center px-4 py-2 bg-sky-600 text-white text-sm font-semibold rounded-lg hover:bg-sky-700 transition-all duration-200 shadow-sm hover:shadow-md"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Neues Lastprofil hochladen
-              </button>
-
               {loadProfiles.length > 1 && (
                 <button
                   onClick={onStartComparison}
@@ -98,6 +90,14 @@ export default function Dashboard({
                   Profile vergleichen
                 </button>
               )}
+
+              <button
+                onClick={handleUploadClick}
+                className="inline-flex items-center px-4 py-2 bg-sky-600 text-white text-sm font-semibold rounded-lg hover:bg-sky-700 transition-all duration-200 shadow-sm hover:shadow-md ml-auto"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Neues Lastprofil hochladen
+              </button>
             </>
           ) : (
             <button

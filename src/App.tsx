@@ -63,7 +63,7 @@ function App() {
   // Mock organization for demo
   const organization = {
     id: '1',
-    name: 'Demo Energie GmbH',
+    name: 'QuantumTech',
     subscription_plan: 'pro'
   };
 
@@ -262,13 +262,6 @@ function App() {
               setCurrentPage('dashboard');
             }} 
           />
-        );
-      case 'team':
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Team-Verwaltung</h2>
-            <p className="text-gray-600">Teammitglieder einladen und Rollen verwalten (Demnächst verfügbar)</p>
-          </div>
         );
       case 'spot-prices':
         return <SpotPriceManagement />;

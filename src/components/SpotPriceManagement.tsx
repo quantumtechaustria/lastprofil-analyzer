@@ -462,7 +462,7 @@ export default function SpotPriceManagement() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="px-6 py-8">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <h1 className="text-3xl font-bold">Spot-Preis Verwaltung</h1>
@@ -590,6 +590,7 @@ export default function SpotPriceManagement() {
         </div>
       </div>
 
+      {(error || success || status === 'loading' || (status === 'empty' && !isLoadingFromApi) || isLoadingFromApi || uploading) && (
       <div className="bg-white rounded-lg shadow-md p-6">
 
         {error && (
@@ -642,6 +643,14 @@ export default function SpotPriceManagement() {
         )}
 
       </div>
+      )}
+
+      {!showChart && !error && status === 'loaded' && !isLoadingFromApi && !uploading && (
+        <div className="bg-white rounded-lg shadow-md p-6 text-center py-8">
+          <RefreshCw className="w-8 h-8 mx-auto mb-2 animate-spin text-sky-600" />
+          <p className="text-sm text-gray-600">Lade Spot-Preis Verlauf...</p>
+        </div>
+      )}
 
       {showChart && spotPriceData.length > 0 && (
         <div className="mt-6 bg-white rounded-lg shadow-md p-6">

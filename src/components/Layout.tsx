@@ -2,7 +2,6 @@ import React, { ReactNode } from 'react';
 import {
   Zap,
   BarChart3,
-  Users,
   Settings,
   Upload,
   CreditCard,
@@ -39,7 +38,6 @@ export default function Layout({
     { name: 'Upload', id: 'upload', icon: Upload },
     { name: 'Spot-Preise', id: 'spot-prices', icon: TrendingUp },
     { name: 'Teilnahmefaktor', id: 'participation-factor', icon: Percent },
-    { name: 'Team', id: 'team', icon: Users },
     { name: 'Abrechnung', id: 'billing', icon: CreditCard },
     { name: 'Einstellungen', id: 'settings', icon: Settings },
   ];
@@ -91,7 +89,7 @@ export default function Layout({
 
       {/* Desktop sidebar */}
       <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
-        <div className="flex flex-col min-h-0 border-r border-gray-200 bg-white">
+        <div className="flex flex-col flex-1 min-h-0 border-r border-gray-200 bg-white">
           <div className="flex items-center h-16 flex-shrink-0 px-4 border-b border-gray-200">
             <Zap className="h-8 w-8 text-sky-500" />
             <span className="ml-2 text-xl font-bold text-gray-900">Lastprofil Analyzer</span>
@@ -160,7 +158,6 @@ export default function Layout({
                  currentPage === 'upload' ? 'Upload' :
                  currentPage === 'spot-prices' ? 'Spot-Preise' :
                  currentPage === 'participation-factor' ? 'Teilnahmefaktor' :
-                 currentPage === 'team' ? 'Team' :
                  currentPage === 'billing' ? 'Abrechnung' :
                  currentPage === 'settings' ? 'Einstellungen' : currentPage}
               </h1>
