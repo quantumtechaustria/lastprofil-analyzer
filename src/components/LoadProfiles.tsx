@@ -486,20 +486,20 @@ export default function LoadProfiles({
             <ArrowLeft className="h-4 w-4 inline mr-1" />
             Zurück zur Übersicht
           </button>
-          <h2 className="text-2xl font-bold text-gray-900">
-            {isComparisonMode ? 'Profil-Vergleich' : selectedProfiles[0]?.name || 'Lastprofil-Analyse'}
-          </h2>
-          {!isComparisonMode && selectedProfiles[0]?.profile_type && selectedProfiles[0].profile_type !== 'unknown' && (
-            <div className="mt-2">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h2 className="text-2xl font-bold text-gray-900">
+              {isComparisonMode ? 'Profil-Vergleich' : selectedProfiles[0]?.name || 'Lastprofil-Analyse'}
+            </h2>
+            {!isComparisonMode && selectedProfiles[0]?.profile_type && selectedProfiles[0].profile_type !== 'unknown' && (
               <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                selectedProfiles[0].profile_type === 'consumer' 
-                  ? 'bg-blue-100 text-blue-800' 
+                selectedProfiles[0].profile_type === 'consumer'
+                  ? 'bg-blue-100 text-blue-800'
                   : 'bg-green-100 text-green-800'
               }`}>
                 {selectedProfiles[0].profile_type === 'consumer' ? '🏠 Verbraucher-Profil' : '⚡ Einspeiser-Profil'}
               </span>
-            </div>
-          )}
+            )}
+          </div>
           {isComparisonMode && (
             <p className="text-gray-600 mt-1">
               {selectedProfiles.length} Profile ausgewählt
