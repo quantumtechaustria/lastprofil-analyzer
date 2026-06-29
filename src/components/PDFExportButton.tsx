@@ -92,7 +92,7 @@ export default function PDFExportButton({
     <button
       onClick={handleExport}
       disabled={isGenerating}
-      className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-sky-600 to-blue-600 text-white font-semibold rounded-lg hover:from-sky-700 hover:to-blue-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+      className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {isGenerating ? (
         <>
@@ -102,7 +102,7 @@ export default function PDFExportButton({
       ) : (
         <>
           <FileDown className="h-5 w-5" />
-          PDF-Bericht exportieren
+          PDF-Bericht
         </>
       )}
     </button>
