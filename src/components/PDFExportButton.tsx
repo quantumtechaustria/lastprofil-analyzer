@@ -14,6 +14,7 @@ interface PDFExportButtonProps {
   spotDateRange?: { start: string; end: string };
   spotEgComparisonPrice?: number;
   fixedPriceAnalysis?: any;
+  onBeforeExport?: () => void | Promise<void>;
 }
 
 export default function PDFExportButton({
@@ -28,6 +29,7 @@ export default function PDFExportButton({
   spotDateRange,
   spotEgComparisonPrice,
   fixedPriceAnalysis,
+  onBeforeExport,
 }: PDFExportButtonProps) {
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -35,6 +37,12 @@ export default function PDFExportButton({
     setIsGenerating(true);
 
     try {
+      // Allow the parent to make captured charts visible (e.g. switch to the
+      // "Übersicht" tab) before we read them from the DOM.
+      if (onBeforeExport) {
+        await onBeforeExport();
+      }
+
       const chartElements: any = {};
 
       if (loadProfileChartId) {

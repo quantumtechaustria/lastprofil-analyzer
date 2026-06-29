@@ -353,7 +353,7 @@ export default function ProfileKPICards({
   const energyLabel = isProducer ? 'Jahreseinspeisung' : 'Jahresverbrauch';
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center">
           <div className="p-3 bg-sky-100 rounded-lg">
@@ -408,45 +408,35 @@ export default function ProfileKPICards({
 
       {/* Day/Night Ratio Card */}
       {kpis.day_night_ratio && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Tag/Nacht-Verhältnis</h3>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center">
-                <Sun className="h-4 w-4 text-yellow-500 mr-1" />
-                <span className="text-sm text-gray-600">Tag (6-22h)</span>
-              </div>
-              <div className="flex items-center">
-                <Moon className="h-4 w-4 text-blue-500 mr-1" />
-                <span className="text-sm text-gray-600">Nacht (22-6h)</span>
-              </div>
-            </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 className="text-sm font-medium text-gray-500 mb-4">Tag/Nacht-Verhältnis</h3>
+
+          {/* Single combined bar */}
+          <div className="flex w-full h-4 rounded-full overflow-hidden bg-gray-200">
+            <div
+              className="bg-yellow-500 h-full"
+              style={{ width: `${kpis.day_night_ratio.day_percent}%` }}
+              title={`Tag: ${formatNumberGerman(kpis.day_night_ratio.day_percent)}%`}
+            />
+            <div
+              className="bg-blue-500 h-full"
+              style={{ width: `${kpis.day_night_ratio.night_percent}%` }}
+              title={`Nacht: ${formatNumberGerman(kpis.day_night_ratio.night_percent)}%`}
+            />
           </div>
-          <div className="flex items-center space-x-4">
-            <div className="flex-1">
-              <div className="flex justify-between text-sm text-gray-600 mb-1">
-                <span>Tag</span>
-                <span>{formatNumberGerman(kpis.day_night_ratio.day_percent)}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-yellow-500 h-2 rounded-full" 
-                  style={{ width: `${kpis.day_night_ratio.day_percent}%` }}
-                />
-              </div>
-            </div>
-            <div className="flex-1">
-              <div className="flex justify-between text-sm text-gray-600 mb-1">
-                <span>Nacht</span>
-                <span>{formatNumberGerman(kpis.day_night_ratio.night_percent)}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-blue-500 h-2 rounded-full" 
-                  style={{ width: `${kpis.day_night_ratio.night_percent}%` }}
-                />
-              </div>
-            </div>
+
+          {/* Legend */}
+          <div className="flex items-center justify-between mt-3 text-sm">
+            <span className="flex items-center text-gray-600">
+              <Sun className="h-4 w-4 text-yellow-500 mr-1" />
+              Tag
+              <span className="ml-1 font-semibold text-yellow-500">{formatNumberGerman(kpis.day_night_ratio.day_percent)}%</span>
+            </span>
+            <span className="flex items-center text-gray-600">
+              <span className="font-semibold text-blue-500 mr-1">{formatNumberGerman(kpis.day_night_ratio.night_percent)}%</span>
+              Nacht
+              <Moon className="h-4 w-4 text-blue-500 ml-1" />
+            </span>
           </div>
         </div>
       )}
