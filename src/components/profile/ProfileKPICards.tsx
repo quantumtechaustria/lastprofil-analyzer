@@ -70,7 +70,7 @@ export default function ProfileKPICards({
 
       return (
         <>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white rounded-xl shadow-sm border border-white p-6 mb-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Profil-Zusammensetzung</h3>
             <div className="flex items-center space-x-6">
               <div className="flex items-center">
@@ -88,7 +88,7 @@ export default function ProfileKPICards({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-white p-6">
               <div className="flex items-center">
                 <div className="p-3 bg-sky-100 rounded-lg">
                   <Zap className="h-6 w-6 text-sky-600" />
@@ -103,7 +103,7 @@ export default function ProfileKPICards({
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-white p-6">
               <div className="flex items-center">
                 <div className="p-3 bg-green-100 rounded-lg">
                   <Activity className="h-6 w-6 text-green-600" />
@@ -118,7 +118,7 @@ export default function ProfileKPICards({
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-white p-6">
               <div className="flex items-center">
                 <div className="p-3 bg-emerald-100 rounded-lg">
                   <ArrowDownUp className="h-6 w-6 text-emerald-600" />
@@ -133,7 +133,7 @@ export default function ProfileKPICards({
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-white p-6">
               <div className="flex items-center">
                 <div className="p-3 bg-amber-100 rounded-lg">
                   <TrendingUp className="h-6 w-6 text-amber-600" />
@@ -163,7 +163,7 @@ export default function ProfileKPICards({
 
       return (
         <>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white rounded-xl shadow-sm border border-white p-6 mb-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Profil-Zusammensetzung</h3>
             <div className="flex items-center space-x-6">
               <div className="flex items-center">
@@ -176,7 +176,7 @@ export default function ProfileKPICards({
           </div>
 
           {/* Total Energy Block */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white rounded-xl shadow-sm border border-white p-6 mb-6">
             <div className="flex items-center">
               <div className={`p-3 ${profileType === 'consumer' ? 'bg-sky-100' : 'bg-green-100'} rounded-lg`}>
                 <Zap className={`h-6 w-6 ${profileType === 'consumer' ? 'text-sky-600' : 'text-green-600'}`} />
@@ -202,7 +202,7 @@ export default function ProfileKPICards({
                 <div key={profile.id}>
                   <h3 className="text-lg font-medium text-gray-900 mb-4">{profile.name}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="bg-white rounded-xl shadow-sm border border-white p-6">
                       <div className="flex items-center">
                         <div className={`p-3 ${profile.profile_type === 'producer' ? 'bg-green-100' : 'bg-sky-100'} rounded-lg`}>
                           <Zap className={`h-6 w-6 ${profile.profile_type === 'producer' ? 'text-green-600' : 'text-sky-600'}`} />
@@ -219,7 +219,7 @@ export default function ProfileKPICards({
                       </div>
                     </div>
 
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="bg-white rounded-xl shadow-sm border border-white p-6">
                       <div className="flex items-center">
                         <div className="p-3 bg-orange-100 rounded-lg">
                           <TrendingUp className="h-6 w-6 text-orange-600" />
@@ -236,7 +236,7 @@ export default function ProfileKPICards({
                       </div>
                     </div>
 
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="bg-white rounded-xl shadow-sm border border-white p-6">
                       <div className="flex items-center">
                         <div className="p-3 bg-emerald-100 rounded-lg">
                           <Activity className="h-6 w-6 text-emerald-600" />
@@ -274,7 +274,7 @@ export default function ProfileKPICards({
       <>
         {/* Profile Type Summary for Comparison */}
         {(consumerCount > 0 || producerCount > 0) && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white rounded-xl shadow-sm border border-white p-6 mb-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Profil-Zusammensetzung</h3>
             <div className="flex items-center space-x-6">
               {consumerCount > 0 && (
@@ -298,7 +298,7 @@ export default function ProfileKPICards({
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-white p-6">
             <div className="flex items-center">
               <div className="p-3 bg-sky-100 rounded-lg">
                 <Zap className="h-6 w-6 text-sky-600" />
@@ -312,7 +312,7 @@ export default function ProfileKPICards({
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-white p-6">
             <div className="flex items-center">
               <div className="p-3 bg-orange-100 rounded-lg">
                 <TrendingUp className="h-6 w-6 text-orange-600" />
@@ -326,7 +326,7 @@ export default function ProfileKPICards({
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-white p-6">
             <div className="flex items-center">
               <div className="p-3 bg-emerald-100 rounded-lg">
                 <Activity className="h-6 w-6 text-emerald-600" />
@@ -354,7 +354,7 @@ export default function ProfileKPICards({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-white p-6">
         <div className="flex items-center">
           <div className="p-3 bg-sky-100 rounded-lg">
             <Zap className="h-6 w-6 text-sky-600" />
@@ -371,7 +371,7 @@ export default function ProfileKPICards({
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-white p-6">
         <div className="flex items-center">
           <div className="p-3 bg-orange-100 rounded-lg">
             <TrendingUp className="h-6 w-6 text-orange-600" />
@@ -388,7 +388,7 @@ export default function ProfileKPICards({
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-white p-6">
         <div className="flex items-center">
           <div className="p-3 bg-emerald-100 rounded-lg">
             <Activity className="h-6 w-6 text-emerald-600" />
@@ -408,7 +408,7 @@ export default function ProfileKPICards({
 
       {/* Day/Night Ratio Card */}
       {kpis.day_night_ratio && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-white p-6">
           <h3 className="text-sm font-medium text-gray-500 mb-4">Tag/Nacht-Verhältnis</h3>
 
           {/* Single combined bar */}

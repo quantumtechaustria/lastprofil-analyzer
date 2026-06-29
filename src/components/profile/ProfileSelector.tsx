@@ -58,7 +58,7 @@ export default function ProfileSelector({
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-white p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Profile für Vergleich auswählen
         </h3>

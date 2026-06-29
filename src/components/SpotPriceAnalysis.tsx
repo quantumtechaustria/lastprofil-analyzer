@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { AlertCircle, Calculator, Loader2, TrendingDown, TrendingUp, Zap, DollarSign } from 'lucide-react';
+import { AlertCircle, Calculator, Loader2, TrendingDown, TrendingUp, Zap, DollarSign, Info } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { calculateSpotPriceCosts } from '../lib/spot-price-cost-calculator';
 import type { SpotPriceCostResult } from '../lib/spot-price-cost-calculator';
@@ -24,6 +24,8 @@ export default function SpotPriceAnalysis({ profile, onResultChange }: SpotPrice
   const [dateRange, setDateRange] = useState({ min: '', max: '' });
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [showDetailedView, setShowDetailedView] = useState(false);
+  const [showMonthlyView, setShowMonthlyView] = useState(false);
+  const [showInfoBubble, setShowInfoBubble] = useState(false);
   const [handlingFee, setHandlingFee] = useState<string>('');
   const [egComparisonEnabled, setEgComparisonEnabled] = useState(false);
   const [egComparisonPrice, setEgComparisonPrice] = useState<string>('');
@@ -240,10 +242,36 @@ export default function SpotPriceAnalysis({ profile, onResultChange }: SpotPrice
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+      <div className="bg-white rounded-lg shadow-md border border-white p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">Spotpreis-Analyse</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-bold text-gray-900">Spotpreis-Analyse</h3>
+              <div className="relative">
+                <button
+                  onClick={() => setShowInfoBubble(!showInfoBubble)}
+                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+                  aria-label="Berechnungsmethode"
+                >
+                  <Info className="w-5 h-5 text-gray-600" />
+                </button>
+                {showInfoBubble && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowInfoBubble(false)} />
+                    <div className="absolute left-0 top-full mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 p-4 z-50">
+                      <p className="font-semibold mb-2 text-sm text-gray-900">Berechnungsmethode:</p>
+                      <ul className="list-disc list-inside space-y-1 text-xs text-gray-700">
+                        <li><strong>Exakte 15-Minuten-Berechnung:</strong> Jeder Lastprofilwert wird individuell mit seinem Spotpreis multipliziert</li>
+                        <li><strong>Bei stündlichen Spotpreisen:</strong> Alle 4 Viertelstunden einer Stunde nutzen denselben Stundenpreis</li>
+                        <li><strong>Bei viertelstündlichen Spotpreisen (ab Okt 2025):</strong> Direkte 1:1 Zuordnung Lastprofil ↔ Spotpreis</li>
+                        <li><strong>{isProducer ? 'Gesamtgutschrift' : 'Gesamtkosten'} = Σ (kWh₁₅ₘᵢₙ × Preis₁₅ₘᵢₙ)</strong> - Summe aller einzelnen 15-Min-Berechnungen</li>
+                        <li><strong>Durchschnittspreis:</strong> Ergebnis aus {isProducer ? 'Gesamtgutschrift' : 'Gesamtkosten'} ÷ {isProducer ? 'Gesamteinspeisung' : 'Gesamtverbrauch'} (keine simple Preismittelung!)</li>
+                      </ul>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
             <p className="text-sm text-gray-600 mt-1">
               Berechnen Sie die tatsächlichen {isProducer ? 'Gutschriften' : 'Kosten'} für {profile.name} basierend auf den Spotmarkt-Preisen
             </p>
@@ -253,7 +281,7 @@ export default function SpotPriceAnalysis({ profile, onResultChange }: SpotPrice
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
             <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
-              Von Datum
+              Von
             </label>
             <input
               type="date"
@@ -267,7 +295,7 @@ export default function SpotPriceAnalysis({ profile, onResultChange }: SpotPrice
           </div>
           <div>
             <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
-              Bis Datum
+              Bis
             </label>
             <input
               type="date"
@@ -396,8 +424,17 @@ export default function SpotPriceAnalysis({ profile, onResultChange }: SpotPrice
             )}
           </div>
 
-          <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-            <h4 className="text-lg font-bold text-gray-900 mb-4">Monatliche Auswertung</h4>
+          <div className="bg-white rounded-lg shadow-md border border-white p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-lg font-bold text-gray-900">Monatliche Auswertung</h4>
+              <button
+                onClick={() => setShowMonthlyView(!showMonthlyView)}
+                className="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                {showMonthlyView ? 'Ausblenden' : 'Anzeigen'}
+              </button>
+            </div>
+            {showMonthlyView && (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -468,10 +505,11 @@ export default function SpotPriceAnalysis({ profile, onResultChange }: SpotPrice
                 </tbody>
               </table>
             </div>
+            )}
           </div>
 
           {/* EG-Vergleich Section */}
-          <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-md border border-white p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <input
@@ -645,23 +683,7 @@ export default function SpotPriceAnalysis({ profile, onResultChange }: SpotPrice
             )}
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-blue-800">
-                <p className="font-semibold mb-1">Berechnungsmethode:</p>
-                <ul className="list-disc list-inside space-y-1 text-xs">
-                  <li><strong>Exakte 15-Minuten-Berechnung:</strong> Jeder Lastprofilwert wird individuell mit seinem Spotpreis multipliziert</li>
-                  <li><strong>Bei stündlichen Spotpreisen:</strong> Alle 4 Viertelstunden einer Stunde nutzen denselben Stundenpreis</li>
-                  <li><strong>Bei viertelstündlichen Spotpreisen (ab Okt 2025):</strong> Direkte 1:1 Zuordnung Lastprofil ↔ Spotpreis</li>
-                  <li><strong>{isProducer ? 'Gesamtgutschrift' : 'Gesamtkosten'} = Σ (kWh₁₅ₘᵢₙ × Preis₁₅ₘᵢₙ)</strong> - Summe aller einzelnen 15-Min-Berechnungen</li>
-                  <li><strong>Durchschnittspreis:</strong> Ergebnis aus {isProducer ? 'Gesamtgutschrift' : 'Gesamtkosten'} ÷ {isProducer ? 'Gesamteinspeisung' : 'Gesamtverbrauch'} (keine simple Preismittelung!)</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-md border border-white p-6">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-lg font-bold text-gray-900">Detaillierte 15-Minuten-Ansicht</h4>
               <button

@@ -170,7 +170,7 @@ export default function Dashboard({
 
         {loadProfiles.length === 0 ? (
           /* Empty State */
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+          <div className="bg-white rounded-xl shadow-sm border border-white p-8 text-center">
             <div className="max-w-md mx-auto">
               <div className="mx-auto h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <Upload className="h-8 w-8 text-gray-400" />
@@ -198,7 +198,7 @@ export default function Dashboard({
               {loadProfiles.map((profile, index) => (
                 <div
                   key={profile.id || index}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200"
+                  className="bg-white rounded-lg shadow-sm border border-white"
                 >
                   <div className="p-3">
                     <div className="flex items-start justify-between mb-2">

@@ -89,8 +89,8 @@ export default function Layout({
 
       {/* Desktop sidebar */}
       <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
-        <div className="flex flex-col flex-1 min-h-0 border-r border-gray-200 bg-white">
-          <div className="flex items-center h-16 flex-shrink-0 px-4 border-b border-gray-200">
+        <div className="flex flex-col flex-1 min-h-0 border-r border-white bg-white">
+          <div className="flex items-center h-16 flex-shrink-0 px-4 border-b border-white">
             <Zap className="h-8 w-8 text-sky-500" />
             <span className="ml-2 text-xl font-bold text-gray-900">Lastprofil Analyzer</span>
           </div>
@@ -115,7 +115,7 @@ export default function Layout({
           
           {/* User info */}
           {user && (
-            <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
+            <div className="flex-shrink-0 flex border-t border-white p-4">
               <div className="flex items-center w-full">
                 <div className="flex-shrink-0">
                   <div className="h-8 w-8 bg-gray-300 rounded-full flex items-center justify-center">

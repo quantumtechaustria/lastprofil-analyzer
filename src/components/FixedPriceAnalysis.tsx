@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Calculator, Zap, DollarSign, TrendingDown, TrendingUp } from 'lucide-react';
+import { Calculator, Zap, DollarSign, TrendingDown, TrendingUp, Info } from 'lucide-react';
 import { formatNumberGerman, formatIntegerGerman, formatLargeNumberGerman } from '../lib/utils';
 
 export interface FixedPriceAnalysisResult {
@@ -25,6 +25,7 @@ export default function FixedPriceAnalysis({ profile, onResultChange }: FixedPri
   const [dateRange, setDateRange] = useState({ min: '', max: '' });
   const [fixedPriceNow, setFixedPriceNow] = useState<string>('');
   const [fixedPriceNew, setFixedPriceNew] = useState<string>('');
+  const [showInfoBubble, setShowInfoBubble] = useState(false);
 
   useEffect(() => {
     if (profile?.parsedData && profile.parsedData.length > 0) {
@@ -94,10 +95,35 @@ export default function FixedPriceAnalysis({ profile, onResultChange }: FixedPri
   }, [totalKwh, priceNow, priceNew, costNow, costNew, savings, hasValidPrices, startDate, endDate, isProducer]);
 
   return (
-    <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-md border border-white p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-lg font-bold text-gray-900">Fixpreis-Analyse</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-bold text-gray-900">Fixpreis-Analyse</h3>
+            <div className="relative">
+              <button
+                onClick={() => setShowInfoBubble(!showInfoBubble)}
+                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Berechnungsmethode"
+              >
+                <Info className="w-5 h-5 text-gray-600" />
+              </button>
+              {showInfoBubble && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowInfoBubble(false)} />
+                  <div className="absolute left-0 top-full mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 p-4 z-50">
+                    <p className="font-semibold mb-2 text-sm text-gray-900">Berechnungsmethode:</p>
+                    <ul className="list-disc list-inside space-y-1 text-xs text-gray-700">
+                      <li><strong>{isProducer ? 'Gesamteinspeisung' : 'Gesamtverbrauch'}:</strong> Summe aller Energiemengen im gewählten Zeitraum (kW × 0,25 h bzw. kWh direkt)</li>
+                      <li><strong>{isProducer ? 'Gutschrift' : 'Kosten'} = {isProducer ? 'Gesamteinspeisung' : 'Gesamtverbrauch'} (kWh) × Fixpreis (ct/kWh) ÷ 100</strong></li>
+                      <li><strong>Berechnung jetzt vs. neu:</strong> Dieselbe Energiemenge wird mit dem aktuellen und dem neuen Fixpreis gerechnet</li>
+                      <li><strong>{isProducer ? 'Vorteil' : 'Ersparnis'}:</strong> Differenz zwischen {isProducer ? 'neuer und aktueller Gutschrift' : 'aktuellen und neuen Kosten'}</li>
+                    </ul>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
           <p className="text-sm text-gray-600 mt-1">
             Vergleichen Sie Ihren aktuellen Fixpreis mit einem optimierten Fixpreis für {profile.name}
           </p>

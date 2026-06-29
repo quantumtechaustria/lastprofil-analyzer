@@ -365,7 +365,7 @@ export default function ParticipationFactor({ loadProfiles }: ParticipationFacto
         </p>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-white p-6 mb-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">Profil-Auswahl</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -442,14 +442,14 @@ export default function ParticipationFactor({ loadProfiles }: ParticipationFacto
       </div>
 
       {!canAnalyze ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+        <div className="bg-white rounded-lg shadow-sm border border-white p-12 text-center">
           <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600">
             Bitte wählen Sie alle Profile und einen Zeitraum aus, um die Analyse zu starten
           </p>
         </div>
       ) : !currentAnalysis ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+        <div className="bg-white rounded-lg shadow-sm border border-white p-12 text-center">
           <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600">
             Keine Daten für den ausgewählten Zeitraum gefunden
@@ -457,7 +457,7 @@ export default function ParticipationFactor({ loadProfiles }: ParticipationFacto
         </div>
       ) : viewMode === 'month' && monthAnalysis ? (
         <>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white rounded-xl shadow-sm border border-white p-6 mb-6">
             <div className="flex justify-between items-end mb-4">
               <div>
                 <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">
@@ -565,7 +565,7 @@ export default function ParticipationFactor({ loadProfiles }: ParticipationFacto
             />
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+          <div className="bg-white rounded-lg shadow-sm border border-white p-4 mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Tägliche Abnahme im Monat</h3>
             <ResponsiveContainer width="100%" height={400}>
               <ComposedChart data={monthAnalysis.dailyResults} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -610,7 +610,7 @@ export default function ParticipationFactor({ loadProfiles }: ParticipationFacto
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-white p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Monats-Statistik</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex gap-3 items-center p-4 bg-gray-50 rounded-lg" style={{ borderLeft: `4px solid #10b981` }}>
@@ -642,7 +642,7 @@ export default function ParticipationFactor({ loadProfiles }: ParticipationFacto
         </>
       ) : analysis ? (
         <>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white rounded-xl shadow-sm border border-white p-6 mb-6">
             <div className="flex justify-between items-end mb-4">
               <div>
                 <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">
@@ -780,7 +780,7 @@ export default function ParticipationFactor({ loadProfiles }: ParticipationFacto
             ))}
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+          <div className="bg-white rounded-lg shadow-sm border border-white p-4 mb-6">
             <ResponsiveContainer width="100%" height={400}>
               {showMode === 'stacked' ? (
                 <ComposedChart data={analysis.chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -809,7 +809,7 @@ export default function ParticipationFactor({ loadProfiles }: ParticipationFacto
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-white p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Teilnahmefaktor-Referenz</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[

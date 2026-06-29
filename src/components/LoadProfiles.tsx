@@ -357,7 +357,7 @@ export default function LoadProfiles({
   );
 
   const chartCard = (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 relative">
+    <div className="bg-white rounded-xl shadow-sm border border-white p-6 relative">
       {/* Legend top-right corner of card */}
       {selectedProfiles.length > 0 && !isLoadingChartData && (
         <div className="absolute top-6 right-6 z-10 bg-white rounded-lg border border-gray-200 px-3 py-2 shadow-sm">
@@ -581,7 +581,7 @@ export default function LoadProfiles({
           </div>
 
           {/* Übersicht */}
-          <div className={activeAnalysisTab === 'overview' ? 'space-y-8' : 'hidden'}>
+          <div className={activeAnalysisTab === 'overview' ? '' : 'hidden'}>
             {kpiCards}
             {viewControls}
             {chartCard}

@@ -141,61 +141,73 @@ const ViewControls: React.FC<ViewControlsProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+    <div className="mt-2 mb-4">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-        {/* View Type Selector */}
-        <div className="flex flex-wrap gap-2">
-          {[
-            { id: 'year', label: 'Jahr', description: 'Monatliche Übersicht' },
-            { id: 'month', label: 'Monat', description: 'Tägliche Werte' },
-            { id: 'week', label: 'Woche', description: 'Tägliche Werte' },
-            { id: 'day', label: 'Tag', description: 'Stündliche Werte' },
-            { id: 'hour', label: '15min', description: '15-Minuten-Werte' },
-            { id: 'weekdayWeekend', label: 'Werktag/WE', description: 'Durchschnittsprofile' }
-          ].map((type) => (
-            <button
-              key={type.id}
-              onClick={() => onViewTypeChange(type.id)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                viewType === type.id
-                  ? 'bg-sky-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-              title={type.description}
-            >
-              {type.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Year View Mode Toggle */}
-        {viewType === 'year' && onYearViewModeChange && (
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">Anzeige:</span>
-            <div className="flex rounded-lg bg-gray-100 p-1">
+        {/* Left group: view selector + Anzeige toggle + Datenbereich */}
+        <div className="flex flex-wrap items-center gap-10">
+          {/* View Type Selector */}
+          <div className="flex flex-wrap rounded-lg bg-white p-1">
+            {[
+              { id: 'year', label: 'Jahr', description: 'Monatliche Übersicht' },
+              { id: 'month', label: 'Monat', description: 'Tägliche Werte' },
+              { id: 'week', label: 'Woche', description: 'Tägliche Werte' },
+              { id: 'day', label: 'Tag', description: 'Stündliche Werte' },
+              { id: 'hour', label: '15min', description: '15-Minuten-Werte' },
+              { id: 'weekdayWeekend', label: 'Werktag/WE', description: 'Durchschnittsprofile' }
+            ].map((type) => (
               <button
-                onClick={() => onYearViewModeChange('months')}
-                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                  yearViewMode === 'months'
-                    ? 'bg-white text-gray-900 shadow-sm'
+                key={type.id}
+                onClick={() => onViewTypeChange(type.id)}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  viewType === type.id
+                    ? 'bg-gradient-to-r from-sky-600 to-blue-600 text-white shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
+                title={type.description}
               >
-                Monate
+                {type.label}
               </button>
-              <button
-                onClick={() => onYearViewModeChange('days')}
-                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                  yearViewMode === 'days'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Alle Tage
-              </button>
-            </div>
+            ))}
           </div>
-        )}
+
+          {/* Year View Mode Toggle */}
+          {viewType === 'year' && onYearViewModeChange && (
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-600">Anzeige:</span>
+              <div className="flex rounded-lg bg-white p-1">
+                <button
+                  onClick={() => onYearViewModeChange('months')}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    yearViewMode === 'months'
+                      ? 'bg-gradient-to-r from-sky-600 to-blue-600 text-white shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Monate
+                </button>
+                <button
+                  onClick={() => onYearViewModeChange('days')}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    yearViewMode === 'days'
+                      ? 'bg-gradient-to-r from-sky-600 to-blue-600 text-white shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Alle Tage
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Data Range Info */}
+          {memoizedDateRange && (
+            <p className="text-sm text-gray-500">
+              {isComparisonMode ? 'Verfügbarer Zeitraum' : 'Datenbereich'}: {' '}
+              {format(memoizedDateRange.start, 'dd.MM.yyyy', { locale: de })} - {' '}
+              {format(memoizedDateRange.end, 'dd.MM.yyyy', { locale: de })}
+            </p>
+          )}
+        </div>
 
         {/* Date Navigation */}
         {['year', 'month', 'week', 'day', 'hour'].includes(viewType) && (
@@ -203,12 +215,12 @@ const ViewControls: React.FC<ViewControlsProps> = ({
             <button
               onClick={handlePrevious}
               disabled={!canNavigatePrevious()}
-              className="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-3 rounded-lg bg-white text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
-            
-            <div className="flex items-center space-x-2 min-w-0 relative">
+
+            <div className="flex items-center space-x-2 min-w-0 relative bg-white rounded-lg px-3 py-3">
               <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
               {(viewType === 'day' || viewType === 'hour') ? (
                 <div className="relative">
@@ -236,7 +248,7 @@ const ViewControls: React.FC<ViewControlsProps> = ({
             <button
               onClick={handleNext}
               disabled={!canNavigateNext()}
-              className="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-3 rounded-lg bg-white text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -244,17 +256,6 @@ const ViewControls: React.FC<ViewControlsProps> = ({
         )}
 
       </div>
-
-      {/* Data Range Info */}
-      {memoizedDateRange && (
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <p className="text-sm text-gray-500">
-            {isComparisonMode ? 'Verfügbarer Zeitraum' : 'Datenbereich'}: {' '}
-            {format(memoizedDateRange.start, 'dd.MM.yyyy', { locale: de })} - {' '}
-            {format(memoizedDateRange.end, 'dd.MM.yyyy', { locale: de })}
-          </p>
-        </div>
-      )}
     </div>
   );
 };
